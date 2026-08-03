@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pyrenoid Record Submission</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --paper: #F1ECDD;
+    --paper-raised: #F8F4E9;
+    --ink: #16241C;
+    --ink-soft: #4B5A50;
+    --moss: #3E6350;
+    --moss-deep: #1F3D2E;
+    --ochre: #A97A22;
+    --line: #C9C0A6;
+    --danger: #8C3B2E;
+    --radius: 3px;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', serif;
+    padding: 48px 20px 80px;
+    line-height: 1.5;
+  }
+  .wrap{ max-width: 720px; margin: 0 auto; }
+
+  /* header / specimen-label motif */
+  header{ margin-bottom: 40px; }
+  .eyebrow{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--moss);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom: 10px;
+  }
+  .eyebrow::after{ content:""; flex:1; height:1px; background: var(--line); }
+  h1{
+    font-family: 'Fraunces', serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-size: 34px;
+    margin: 0 0 8px;
+    color: var(--moss-deep);
+    letter-spacing: -0.01em;
+  }
+  .sub{
+    color: var(--ink-soft);
+    font-size: 15.5px;
+    max-width: 56ch;
+  }
+  .mark{ width: 34px; height: 34px; flex-shrink:0; }
+
+  /* card */
+  .card{
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 32px 32px 8px;
+    box-shadow: 0 1px 0 rgba(31,61,46,0.04);
+  }
+  fieldset{
+    border: none;
+    padding: 0 0 26px;
+    margin: 0 0 26px;
+    border-bottom: 1px solid var(--line);
+  }
+  fieldset:last-of-type{ border-bottom: none; }
+  legend{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    padding: 0;
+    margin-bottom: 16px;
+  }
+  .row{ display:grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .row.single{ grid-template-columns: 1fr; }
+  .field{ margin-bottom: 16px; }
+  .field:last-child{ margin-bottom: 0; }
+  label{
+    display:block;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 5px;
+  }
+  label .hint{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    color: #9a9280;
+    margin-left: 6px;
+  }
+  label .req{ color: var(--danger); }
+  input[type=text], input[type=email], input[type=url], select, textarea{
+    width: 100%;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13.5px;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 9px 10px;
+  }
+  input:focus, select:focus, textarea:focus{
+    outline: 2px solid var(--moss);
+    outline-offset: 1px;
+    border-color: var(--moss);
+  }
+  textarea{ resize: vertical; min-height: 64px; font-family: 'Source Serif 4', serif; font-size: 14px; }
+  select{ appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%), linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%); background-position: calc(100% - 16px) center, calc(100% - 11px) center; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; }
+  .checkgrid{ display:flex; flex-wrap:wrap; gap: 8px; }
+  .chip{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 6px 12px;
+    cursor: pointer;
+    background: #fff;
+    color: var(--ink-soft);
+    user-select: none;
+  }
+  .chip input{ display:none; }
+  .chip.active{ background: var(--moss-deep); border-color: var(--moss-deep); color: #fff; }
+
+  .actions{ padding: 22px 0 6px; display:flex; align-items:center; gap: 14px; }
+  button{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    background: var(--moss-deep);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 12px 22px;
+    cursor: pointer;
+  }
+  button:hover{ background: var(--moss); }
+  button:disabled{ background: #a8b0a9; cursor: default; }
+  .status{ font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--ink-soft); }
+  .status.ok{ color: var(--moss); }
+  .status.err{ color: var(--danger); }
+
+  /* log */
+  .logsection{ margin-top: 56px; }
+  .logsection h2{
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--moss-deep);
+    margin: 0 0 4px;
+  }
+  .logsection .sub{ font-size: 13.5px; margin-bottom: 18px; }
+  .entry{
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+  .entry-top{ display:flex; justify-content: space-between; align-items:baseline; gap: 12px; margin-bottom: 8px; }
+  .entry-species{ font-family:'Fraunces', serif; font-style: italic; font-size: 16px; color: var(--ink); }
+  .entry-presence{ font-family:'IBM Plex Mono', monospace; font-size: 10.5px; text-transform:uppercase; letter-spacing:0.06em; padding: 3px 8px; border-radius: 20px; }
+  .p-present{ background:#DCE7DC; color:var(--moss-deep); }
+  .p-absent{ background:#EDE0DC; color:var(--danger); }
+  .p-equivocal, .p-not_assessed{ background:#EDE7D3; color:var(--ochre); }
+  .entry pre{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 0;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+  }
+  .empty{ font-family:'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--ink-soft); padding: 18px 0; }
+  .toolbar{ display:flex; justify-content: space-between; align-items:center; margin-bottom: 12px; gap: 10px; flex-wrap: wrap; }
+  .toolbar button.ghost{
+    background: transparent; color: var(--moss-deep); border: 1px solid var(--line); text-transform:none; letter-spacing:0; padding: 7px 12px; font-size: 12px;
+  }
+  .toolbar button.ghost:hover{ background: #fff; }
+
+  @media (max-width: 620px){
+    .row{ grid-template-columns: 1fr; }
+    .card{ padding: 24px 18px 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">
+      <svg class="mark" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="17" cy="17" r="15.5" stroke="#3E6350" stroke-width="1"/>
+        <circle cx="17" cy="17" r="10.5" stroke="#3E6350" stroke-width="1" stroke-dasharray="2 2"/>
+        <circle cx="17" cy="17" r="5" fill="#A97A22" opacity="0.85"/>
+      </svg>
+      Pyrenoid Evolution Database — Intake
+    </div>
+    <h1>Submit a pyrenoid record</h1>
+    <p class="sub">Log a species-level observation from the literature: presence or absence of a pyrenoid, ultrastructural detail where reported, and the source it comes from. Submissions are reviewed before they enter the curated dataset.</p>
+  </header>
+
+  <form class="card" id="form">
+
+    <fieldset>
+      <legend>Submitted by</legend>
+      <div class="row">
+        <div class="field">
+          <label for="submitter_name">Name</label>
+          <input type="text" id="submitter_name" required>
+        </div>
+        <div class="field">
+          <label for="submitter_email">Email <span class="hint">for follow-up questions</span></label>
+          <input type="email" id="submitter_email" required>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Taxonomy</legend>
+      <div class="row">
+        <div class="field">
+          <label for="species_name">Species (binomial) <span class="req">*</span></label>
+          <input type="text" id="species_name" placeholder="e.g. Chlamydomonas reinhardtii" required>
+        </div>
+        <div class="field">
+          <label for="strain">Strain / isolate <span class="hint">if reported</span></label>
+          <input type="text" id="strain" placeholder="e.g. CC-1690">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Source</legend>
+      <div class="row">
+        <div class="field">
+          <label for="reference_citation">Reference citation <span class="req">*</span></label>
+          <input type="text" id="reference_citation" placeholder="Author(s), year, journal" required>
+        </div>
+        <div class="field">
+          <label for="doi">DOI / link <span class="hint">if available</span></label>
+          <input type="url" id="doi" placeholder="https://doi.org/...">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Pyrenoid call</legend>
+      <div class="row">
+        <div class="field">
+          <label for="presence_call">Presence <span class="req">*</span></label>
+          <select id="presence_call" required>
+            <option value="">Select…</option>
+            <option value="present">Present</option>
+            <option value="absent">Absent</option>
+            <option value="equivocal">Equivocal / disputed</option>
+            <option value="not_assessed">Not assessed in this source</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="method">Method of assessment</label>
+          <select id="method">
+            <option value="">Select…</option>
+            <option value="tem">Transmission EM</option>
+            <option value="light_microscopy">Light microscopy</option>
+            <option value="tomography">Electron tomography</option>
+            <option value="other">Other / not specified</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Ultrastructure <span class="hint" style="text-transform:none; letter-spacing:0;">(leave blank if not reported)</span></legend>
+      <div class="row">
+        <div class="field">
+          <label for="membrane_present">Pyrenoid membrane</label>
+          <select id="membrane_present">
+            <option value="">Not reported</option>
+            <option value="yes">Present</option>
+            <option value="no">Absent</option>
+            <option value="unclear">Unclear</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="membrane_type">Membrane type</label>
+          <select id="membrane_type">
+            <option value="">Not reported</option>
+            <option value="continuous">Continuous</option>
+            <option value="fenestrated">Fenestrated</option>
+            <option value="na">N/A</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="starch_sheath">Starch sheath</label>
+          <select id="starch_sheath">
+            <option value="">Not reported</option>
+            <option value="present">Present</option>
+            <option value="absent">Absent</option>
+            <option value="partial">Partial</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="tubule_penetration">Thylakoid tubule penetration</label>
+          <select id="tubule_penetration">
+            <option value="">Not reported</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+            <option value="unclear">Unclear</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="matrix_appearance">Matrix appearance <span class="hint">brief description, e.g. "homogeneous, electron-dense"</span></label>
+        <input type="text" id="matrix_appearance">
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Image</legend>
+      <div class="field">
+        <label for="image_url">Link to figure <span class="hint">page/figure number if no direct URL — file upload comes later</span></label>
+        <input type="text" id="image_url" placeholder="e.g. Fig. 3B, or a URL">
+      </div>
+      <div class="field">
+        <label for="image_rights">Rights status</label>
+        <div class="checkgrid" id="image_rights_chips">
+          <label class="chip"><input type="radio" name="image_rights" value="own_figure">Own figure</label>
+          <label class="chip"><input type="radio" name="image_rights" value="permission_obtained">Permission obtained</label>
+          <label class="chip"><input type="radio" name="image_rights" value="internal_only">Internal use only, unresolved</label>
+          <label class="chip"><input type="radio" name="image_rights" value="not_applicable">No image</label>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Notes</legend>
+      <div class="field">
+        <textarea id="notes" placeholder="Growth conditions, disagreement with other sources, anything that doesn't fit above…"></textarea>
+      </div>
+    </fieldset>
+
+    <div class="actions">
+      <button type="submit" id="submitBtn">Submit record</button>
+      <span class="status" id="statusMsg"></span>
+    </div>
+  </form>
+
+  <div class="logsection" id="thanksPanel" style="display:none;">
+    <div class="entry">
+      <div class="entry-top">
+        <span class="entry-species">Thank you</span>
+      </div>
+      <p class="sub" style="margin-bottom:0;">Your record has been logged for review. It isn't visible here or to other submitters — a curator will check it before it's added to the dataset.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://iplxcpyzefjbtnfacejd.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_7XGJfoPFKERlr6KzHWELtA_oG0WcHDn';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+const chips = document.querySelectorAll('#image_rights_chips .chip');
+chips.forEach(chip => {
+  chip.addEventListener('click', () => {
+    chips.forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+  });
+});
+
+const form = document.getElementById('form');
+const statusMsg = document.getElementById('statusMsg');
+const submitBtn = document.getElementById('submitBtn');
+const thanksPanel = document.getElementById('thanksPanel');
+
+function setStatus(msg, cls){
+  statusMsg.textContent = msg;
+  statusMsg.className = 'status' + (cls ? ' ' + cls : '');
+}
+
+function fieldVal(id){
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  submitBtn.disabled = true;
+  setStatus('Submitting…');
+  thanksPanel.style.display = 'none';
+
+  const activeChip = document.querySelector('#image_rights_chips input:checked');
+
+  const record = {
+    submitter_name: fieldVal('submitter_name'),
+    submitter_email: fieldVal('submitter_email'),
+    species_name: fieldVal('species_name'),
+    strain: fieldVal('strain'),
+    reference_citation: fieldVal('reference_citation'),
+    doi: fieldVal('doi'),
+    presence_call: fieldVal('presence_call'),
+    method: fieldVal('method'),
+    membrane_present: fieldVal('membrane_present'),
+    membrane_type: fieldVal('membrane_type'),
+    starch_sheath: fieldVal('starch_sheath'),
+    tubule_penetration: fieldVal('tubule_penetration'),
+    matrix_appearance: fieldVal('matrix_appearance'),
+    image_url: fieldVal('image_url'),
+    image_rights: activeChip ? activeChip.value : '',
+    notes: fieldVal('notes')
+  };
+
+  if (!record.species_name || !record.reference_citation || !record.presence_call || !record.submitter_email){
+    setStatus('Please fill in the required fields.', 'err');
+    submitBtn.disabled = false;
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient.from('submissions').insert([record]);
+    if (error) throw error;
+    setStatus('Submitted. Thank you.', 'ok');
+    form.reset();
+    chips.forEach(c => c.classList.remove('active'));
+    thanksPanel.style.display = 'block';
+  } catch(err){
+    setStatus('Could not save this submission (' + (err.message || String(err)) + ')', 'err');
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
