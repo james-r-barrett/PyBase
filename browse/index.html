@@ -138,6 +138,24 @@
   }
   .record-detail span b{ color: var(--ink); font-weight: 500; }
 
+  .record{ cursor: pointer; }
+  .record .chevron{
+    display:inline-block; margin-right:4px; color: var(--ink-soft);
+    transition: transform 0.15s; font-family:'IBM Plex Mono', monospace; font-size: 14px;
+  }
+  .record.expanded .chevron{ transform: rotate(90deg); }
+  .record-expand{ display:none; margin-top:12px; padding-top:12px; border-top:1px dashed var(--line); }
+  .record.expanded .record-expand{ display:block; }
+  .expand-row{
+    display:flex; gap:10px; font-size: 13px; padding: 3px 0;
+    border-bottom: 1px solid transparent;
+  }
+  .expand-label{
+    font-family:'IBM Plex Mono', monospace; font-size: 11px; text-transform:uppercase; letter-spacing:0.04em;
+    color: var(--ink-soft); min-width: 190px; flex-shrink:0;
+  }
+  .expand-value{ color: var(--ink); }
+
   .empty{ font-family:'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--ink-soft); padding: 30px 0; text-align:center; }
 
   footer{ margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); }
@@ -218,33 +236,66 @@ function renderResults(records){
     return;
   }
 
-  resultsEl.innerHTML = records.map(r => {
+  resultsEl.innerHTML = records.map((r, i) => {
     const presenceClass = 'p-' + (r.presence_call || 'not_assessed');
     const taxRank = [r.kingdom, r.phylum, r.class, r.order_rank, r.family, r.genus].filter(Boolean).join(' \u203a ') || 'Taxonomy not matched';
     const citationParts = [r.reference_authors, r.reference_year ? '(' + r.reference_year + ')' : '', r.reference_title].filter(Boolean);
     const citationText = citationParts.length ? citationParts.join(' ') : (r.reference_citation || '');
-    const citationLink = r.doi ? '<a href="https://doi.org/' + encodeURIComponent(r.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i,'')) + '" target="_blank" rel="noopener">' + escapeHtml(citationText) + '</a>' : escapeHtml(citationText);
 
-    const details = [];
-    if (r.pyrenoid_class) details.push('<span><b>Class:</b> ' + escapeHtml(r.pyrenoid_class === 'other' ? (r.pyrenoid_class_other || 'other') : r.pyrenoid_class) + '</span>');
-    if (r.traversing_membranes) details.push('<span><b>Traversing membranes:</b> ' + escapeHtml(r.traversing_membranes) + '</span>');
-    if (r.diffusion_barrier) details.push('<span><b>Diffusion barrier:</b> ' + escapeHtml(r.diffusion_barrier) + (r.diffusion_barrier_type ? ' (' + escapeHtml(r.diffusion_barrier_type) + ')' : '') + '</span>');
-    if (r.plastoglobuli) details.push('<span><b>Plastoglobuli:</b> ' + escapeHtml(r.plastoglobuli) + '</span>');
-    if (r.method) details.push('<span><b>Method:</b> ' + escapeHtml(r.method.replace('_',' ')) + '</span>');
+    // Link priority: resolved DOI first, then a manually-supplied paper link, then plain text.
+    let citationLink;
+    if (r.doi){
+      const bareDoi = r.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '');
+      citationLink = '<a href="https://doi.org/' + encodeURIComponent(bareDoi) + '" target="_blank" rel="noopener">' + escapeHtml(citationText) + '</a>';
+    } else if (r.paper_link){
+      citationLink = '<a href="' + escapeHtml(r.paper_link) + '" target="_blank" rel="noopener">' + escapeHtml(citationText) + '</a>';
+    } else {
+      citationLink = escapeHtml(citationText);
+    }
+
+    const rows = [];
+    if (r.strain) rows.push(['Strain', r.strain]);
+    if (r.method) rows.push(['Method', r.method.replace(/_/g,' ')]);
+    if (r.pyrenoid_class) rows.push(['General class', r.pyrenoid_class === 'other' ? (r.pyrenoid_class_other || 'other') : r.pyrenoid_class]);
+    if (r.traversing_membranes) rows.push(['Traversing membranes', r.traversing_membranes]);
+    if (r.continuous_with_thylakoids) rows.push(['Continuous with thylakoids', r.continuous_with_thylakoids]);
+    if (r.membrane_type) rows.push(['Membrane type', r.membrane_type]);
+    if (r.diffusion_barrier) rows.push(['Diffusion barrier', r.diffusion_barrier]);
+    if (r.diffusion_barrier_type) rows.push(['Barrier type', r.diffusion_barrier_type]);
+    if (r.starch_location) rows.push(['Starch location', r.starch_location.replace(/_/g,' ')]);
+    if (r.starch_count) rows.push(['Starch layers', r.starch_count.replace('_plus','+')]);
+    if (r.barrier_membrane_subtype) rows.push(['Barrier membrane origin', r.barrier_membrane_subtype]);
+    if (r.barrier_membrane_morphology) rows.push(['Barrier membrane morphology', r.barrier_membrane_morphology]);
+    if (r.plastoglobuli) rows.push(['Plastoglobuli', r.plastoglobuli]);
+    if (r.plastoglobuli_location) rows.push(['Plastoglobuli location', r.plastoglobuli_location]);
+    if (r.taxonomy_match_type) rows.push(['Taxonomy match', r.taxonomy_match_type]);
+    if (r.ultrastructure_notes) rows.push(['Other notes', r.ultrastructure_notes]);
+
+    const rowsHtml = rows.map(([label, value]) =>
+      '<div class="expand-row"><span class="expand-label">' + escapeHtml(label) + '</span><span class="expand-value">' + escapeHtml(value) + '</span></div>'
+    ).join('');
 
     return `
-      <div class="record">
+      <div class="record" data-index="${i}">
         <div class="record-top">
-          <span class="record-species">${escapeHtml(r.species_name || '(unnamed)')}</span>
+          <span class="record-species"><span class="chevron">\u203a</span> ${escapeHtml(r.species_name || '(unnamed)')}</span>
           <span class="record-presence ${presenceClass}">${escapeHtml((r.presence_call || 'not assessed').replace('_',' '))}</span>
         </div>
         <div class="record-taxonomy">${escapeHtml(taxRank)}</div>
         <div class="record-citation">${citationLink}</div>
-        ${details.length ? '<div class="record-detail">' + details.join('') + '</div>' : ''}
+        <div class="record-expand">
+          ${rowsHtml || '<div class="expand-row"><span class="expand-value">No further ultrastructure detail reported.</span></div>'}
+        </div>
       </div>
     `;
   }).join('');
 }
+
+document.getElementById('results').addEventListener('click', (e) => {
+  if (e.target.closest('a')) return; // don't toggle when clicking the citation link
+  const card = e.target.closest('.record');
+  if (card) card.classList.toggle('expanded');
+});
 
 function applyFilters(){
   const q = document.getElementById('searchInput').value.trim().toLowerCase();

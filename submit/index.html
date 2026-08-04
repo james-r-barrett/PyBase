@@ -316,6 +316,12 @@
           <input type="text" id="reference_citation" placeholder="Author(s), year, journal" required>
         </div>
       </div>
+      <div class="row single">
+        <div class="field">
+          <label for="paper_link">Link to the paper <span class="hint">if the DOI lookup didn't work, or there's no DOI — a journal page, PDF, or any working link</span></label>
+          <input type="url" id="paper_link" placeholder="https://…">
+        </div>
+      </div>
     </fieldset>
 
     <fieldset>
@@ -808,6 +814,7 @@ form.addEventListener('submit', async (e) => {
     species_name: fieldVal('species_name'),
     strain: fieldVal('strain'),
     reference_citation: fieldVal('reference_citation'),
+    paper_link: fieldVal('paper_link'),
     doi: fieldVal('doi'),
     presence_call: fieldVal('presence_call'),
     method: fieldVal('method'),
