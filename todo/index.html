@@ -129,7 +129,15 @@
     <p class="sub">Candidate references — some found automatically, some seeded manually — that don't have a record logged yet. Pick one, read it, and log what you find. Items disappear from this list automatically once a matching submission comes in.</p>
   </header>
 
-  <div id="resultMeta"></div>
+  <div class="controls" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-top:20px;">
+    <div id="resultMeta" style="margin:0;"></div>
+    <select id="sortSelect" style="font-family:'IBM Plex Mono', monospace; font-size:12.5px; padding:8px 10px; border:1px solid var(--line); border-radius:var(--radius); background:var(--surface); color:var(--ink);">
+      <option value="year_asc">Publication year — oldest first</option>
+      <option value="year_desc">Publication year — newest first</option>
+      <option value="added_asc">Date added — oldest first</option>
+      <option value="added_desc">Date added — newest first</option>
+    </select>
+  </div>
   <div id="results"></div>
 
   <footer>
@@ -156,39 +164,68 @@ function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
-async function loadQueue(){
+let allItems = [];
+
+function sortItems(items, mode){
+  const sorted = [...items];
+  // Items with no pub_year sort to the end regardless of direction —
+  // most of the pre-year-tracking backlog will have this until re-scanned.
+  const byYear = (a, b) => {
+    if (a.pub_year == null && b.pub_year == null) return 0;
+    if (a.pub_year == null) return 1;
+    if (b.pub_year == null) return -1;
+    return a.pub_year - b.pub_year;
+  };
+  if (mode === 'year_asc') sorted.sort(byYear);
+  else if (mode === 'year_desc') sorted.sort((a, b) => byYear(b, a));
+  else if (mode === 'added_desc') sorted.sort((a, b) => (b.added_at || '').localeCompare(a.added_at || ''));
+  else sorted.sort((a, b) => (a.added_at || '').localeCompare(b.added_at || '')); // added_asc, default
+  return sorted;
+}
+
+function renderItems(items){
   const resultsEl = document.getElementById('results');
   const metaEl = document.getElementById('resultMeta');
+  metaEl.textContent = items.length + (items.length === 1 ? ' paper still to review' : ' papers still to review');
+
+  if (items.length === 0){
+    resultsEl.innerHTML = '<div class="empty">Nothing outstanding right now — check back later.</div>';
+    return;
+  }
+
+  resultsEl.innerHTML = items.map(item => {
+    const bareDoi = item.doi ? item.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '') : '';
+    const doiLink = bareDoi ? '<a href="https://doi.org/' + encodeURIComponent(bareDoi) + '" target="_blank" rel="noopener">' + escapeHtml(item.citation) + '</a>' : escapeHtml(item.citation);
+    const submitHref = bareDoi ? '../submit/?doi=' + encodeURIComponent(bareDoi) : '../submit/';
+    const yearBadge = item.pub_year ? '<span style="font-family:\'IBM Plex Mono\', monospace; font-size:11px; color:var(--ink-soft); margin-right:8px;">' + item.pub_year + '</span>' : '';
+    return `
+      <div class="item">
+        <div class="item-body">
+          <div class="item-citation">${yearBadge}${doiLink}</div>
+          ${item.notes ? '<div class="item-notes">' + escapeHtml(item.notes) + '</div>' : ''}
+        </div>
+        <a class="item-action" href="${submitHref}">Log this one</a>
+      </div>
+    `;
+  }).join('');
+}
+
+async function loadQueue(){
+  const resultsEl = document.getElementById('results');
   resultsEl.innerHTML = '<div class="empty">Loading…</div>';
   try {
-    const { data, error } = await supabaseClient.from('literature_todo').select('*').order('added_at', { ascending: true });
+    const { data, error } = await supabaseClient.from('literature_todo').select('*');
     if (error) throw error;
-    const items = data || [];
-    metaEl.textContent = items.length + (items.length === 1 ? ' paper still to review' : ' papers still to review');
-
-    if (items.length === 0){
-      resultsEl.innerHTML = '<div class="empty">Nothing outstanding right now — check back later.</div>';
-      return;
-    }
-
-    resultsEl.innerHTML = items.map(item => {
-      const bareDoi = item.doi ? item.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '') : '';
-      const doiLink = bareDoi ? '<a href="https://doi.org/' + encodeURIComponent(bareDoi) + '" target="_blank" rel="noopener">' + escapeHtml(item.citation) + '</a>' : escapeHtml(item.citation);
-      const submitHref = bareDoi ? '../submit/?doi=' + encodeURIComponent(bareDoi) : '../submit/';
-      return `
-        <div class="item">
-          <div class="item-body">
-            <div class="item-citation">${doiLink}</div>
-            ${item.notes ? '<div class="item-notes">' + escapeHtml(item.notes) + '</div>' : ''}
-          </div>
-          <a class="item-action" href="${submitHref}">Log this one</a>
-        </div>
-      `;
-    }).join('');
+    allItems = data || [];
+    renderItems(sortItems(allItems, document.getElementById('sortSelect').value));
   } catch(err){
     resultsEl.innerHTML = '<div class="empty">Could not load the list (' + escapeHtml(err.message || String(err)) + ').</div>';
   }
 }
+
+document.getElementById('sortSelect').addEventListener('change', () => {
+  renderItems(sortItems(allItems, document.getElementById('sortSelect').value));
+});
 
 loadQueue();
 </script>
