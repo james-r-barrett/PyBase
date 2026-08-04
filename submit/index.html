@@ -250,6 +250,7 @@
     <a href="../">Home</a>
     <a href="../submit/" class="active">Submit</a>
     <a href="../browse/">Browse</a>
+    <a href="../todo/">To-do</a>
   </nav>
 
   <header style="position:relative;">
@@ -635,6 +636,14 @@ async function lookupDoi(){
 }
 
 document.getElementById('doiLookupBtn').addEventListener('click', lookupDoi);
+
+// Arrived from the to-do list with a specific paper in mind — prefill and look it up automatically.
+const urlParams = new URLSearchParams(window.location.search);
+const prefillDoi = urlParams.get('doi');
+if (prefillDoi){
+  document.getElementById('doi').value = prefillDoi;
+  lookupDoi();
+}
 document.getElementById('doi').addEventListener('input', () => {
   referenceMeta = { title: '', authors: '', year: null, journal: '' };
   document.getElementById('doiLookupStatus').textContent = '';

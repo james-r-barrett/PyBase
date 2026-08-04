@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pyrenoid Evolution Database — To-do</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --paper: #F1ECDD;
+    --paper-raised: #F8F4E9;
+    --ink: #16241C;
+    --ink-soft: #4B5A50;
+    --moss: #3E6350;
+    --moss-deep: #1F3D2E;
+    --ochre: #A97A22;
+    --line: #C9C0A6;
+    --danger: #8C3B2E;
+    --surface: #FFFFFF;
+    --radius: 3px;
+  }
+  body.dark-mode{
+    --paper: #16211C;
+    --paper-raised: #1D2A22;
+    --ink: #EAE6D7;
+    --ink-soft: #9FAEA3;
+    --moss: #6FA184;
+    --moss-deep: #9FCBAE;
+    --ochre: #E0B15E;
+    --line: #34423A;
+    --danger: #E08669;
+    --surface: #22302A;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', serif;
+    padding: 48px 20px 80px;
+    line-height: 1.5;
+    transition: background 0.15s, color 0.15s;
+  }
+  .wrap{ max-width: 820px; margin: 0 auto; }
+
+  .sitenav{
+    display:flex; gap:18px; margin-bottom:28px;
+    font-family:'IBM Plex Mono', monospace; font-size:12px;
+    letter-spacing:0.05em; text-transform:uppercase;
+  }
+  .sitenav a{ color:var(--ink-soft); text-decoration:none; padding-bottom:3px; border-bottom:2px solid transparent; }
+  .sitenav a:hover{ color:var(--moss-deep); }
+  .sitenav a.active{ color:var(--moss-deep); border-bottom-color:var(--moss-deep); }
+
+  header{ margin-bottom: 28px; position:relative; }
+  #themeToggle{
+    position:absolute; top:0; right:0;
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:20px;
+    padding:6px 12px; font-size:13px; cursor:pointer;
+    font-family:'IBM Plex Mono', monospace; color:var(--ink-soft);
+  }
+  .eyebrow{
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--moss); display:flex; align-items:center; gap:10px; margin-bottom: 10px;
+  }
+  .eyebrow::after{ content:""; flex:1; height:1px; background: var(--line); }
+  h1{
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 32px;
+    margin: 0 0 8px; color: var(--moss-deep); letter-spacing: -0.01em;
+  }
+  .sub{ color: var(--ink-soft); font-size: 15px; max-width: 62ch; }
+
+  #resultMeta{
+    font-family:'IBM Plex Mono', monospace; font-size: 12px; color: var(--ink-soft); margin: 20px 0 14px;
+  }
+
+  .item{
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .item-body{ flex:1; min-width: 220px; }
+  .item-citation{ font-size: 14.5px; color: var(--ink); }
+  .item-citation a{ color: var(--moss-deep); }
+  .item-notes{
+    font-family:'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--ochre); margin-top: 6px;
+  }
+  .item-action{
+    background: var(--moss-deep); color: #fff; text-decoration:none;
+    font-family:'IBM Plex Mono', monospace; font-size: 12px; text-transform:uppercase; letter-spacing:0.03em;
+    padding: 9px 16px; border-radius: var(--radius); white-space:nowrap; align-self:center;
+  }
+  .item-action:hover{ background: var(--moss); }
+
+  .empty{ font-family:'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--ink-soft); padding: 30px 0; text-align:center; }
+  footer{ margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="sitenav">
+    <a href="../">Home</a>
+    <a href="../submit/">Submit</a>
+    <a href="../browse/">Browse</a>
+    <a href="../todo/" class="active">To-do</a>
+  </nav>
+
+  <header>
+    <button type="button" id="themeToggle" aria-label="Toggle dark mode">🌙</button>
+    <div class="eyebrow">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="17" cy="17" r="15.5" stroke="#3E6350" stroke-width="1"/>
+        <circle cx="17" cy="17" r="10.5" stroke="#3E6350" stroke-width="1" stroke-dasharray="2 2"/>
+        <circle cx="17" cy="17" r="5" fill="#A97A22" opacity="0.85"/>
+      </svg>
+      Pyrenoid Evolution Database — To-do
+    </div>
+    <h1>Papers still to review</h1>
+    <p class="sub">Candidate references — some found automatically, some seeded manually — that don't have a record logged yet. Pick one, read it, and log what you find. Items disappear from this list automatically once a matching submission comes in.</p>
+  </header>
+
+  <div id="resultMeta"></div>
+  <div id="results"></div>
+
+  <footer>
+    <p class="sub">Know of a paper that should be here but isn't? Just submit it directly — <a href="../submit/" style="color:var(--moss-deep);">no need to wait for it to show up on this list.</a></p>
+  </footer>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://iplxcpyzefjbtnfacejd.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_7XGJfoPFKERlr6KzHWELtA_oG0WcHDn';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+const themeToggle = document.getElementById('themeToggle');
+function applyTheme(dark){
+  document.body.classList.toggle('dark-mode', dark);
+  themeToggle.textContent = dark ? '☀️' : '🌙';
+}
+let isDark = false;
+applyTheme(isDark);
+themeToggle.addEventListener('click', () => { isDark = !isDark; applyTheme(isDark); });
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+async function loadQueue(){
+  const resultsEl = document.getElementById('results');
+  const metaEl = document.getElementById('resultMeta');
+  resultsEl.innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    const { data, error } = await supabaseClient.from('literature_todo').select('*').order('added_at', { ascending: true });
+    if (error) throw error;
+    const items = data || [];
+    metaEl.textContent = items.length + (items.length === 1 ? ' paper still to review' : ' papers still to review');
+
+    if (items.length === 0){
+      resultsEl.innerHTML = '<div class="empty">Nothing outstanding right now — check back later.</div>';
+      return;
+    }
+
+    resultsEl.innerHTML = items.map(item => {
+      const bareDoi = item.doi ? item.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '') : '';
+      const doiLink = bareDoi ? '<a href="https://doi.org/' + encodeURIComponent(bareDoi) + '" target="_blank" rel="noopener">' + escapeHtml(item.citation) + '</a>' : escapeHtml(item.citation);
+      const submitHref = bareDoi ? '../submit/?doi=' + encodeURIComponent(bareDoi) : '../submit/';
+      return `
+        <div class="item">
+          <div class="item-body">
+            <div class="item-citation">${doiLink}</div>
+            ${item.notes ? '<div class="item-notes">' + escapeHtml(item.notes) + '</div>' : ''}
+          </div>
+          <a class="item-action" href="${submitHref}">Log this one</a>
+        </div>
+      `;
+    }).join('');
+  } catch(err){
+    resultsEl.innerHTML = '<div class="empty">Could not load the list (' + escapeHtml(err.message || String(err)) + ').</div>';
+  }
+}
+
+loadQueue();
+</script>
+</body>
+</html>
