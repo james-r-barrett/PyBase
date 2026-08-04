@@ -18,8 +18,22 @@
     --ochre: #A97A22;
     --line: #C9C0A6;
     --danger: #8C3B2E;
+    --surface: #FFFFFF;
     --radius: 3px;
   }
+  body.dark-mode{
+    --paper: #16211C;
+    --paper-raised: #1D2A22;
+    --ink: #EAE6D7;
+    --ink-soft: #9FAEA3;
+    --moss: #6FA184;
+    --moss-deep: #9FCBAE;
+    --ochre: #E0B15E;
+    --line: #34423A;
+    --danger: #E08669;
+    --surface: #22302A;
+  }
+  body{ transition: background 0.15s, color 0.15s; }
   *{ box-sizing: border-box; }
   body{
     margin:0;
@@ -107,7 +121,7 @@
     font-family: 'IBM Plex Mono', monospace;
     font-size: 13.5px;
     color: var(--ink);
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius);
     padding: 9px 10px;
@@ -127,7 +141,7 @@
     border-radius: 20px;
     padding: 6px 12px;
     cursor: pointer;
-    background: #fff;
+    background: var(--surface);
     color: var(--ink-soft);
     user-select: none;
   }
@@ -184,7 +198,7 @@
     white-space: pre-wrap;
     word-break: break-word;
     margin: 0;
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius);
     padding: 10px 12px;
@@ -194,7 +208,7 @@
   #pasteBox{
     border: 1.5px dashed var(--line);
     border-radius: var(--radius);
-    background: #fff;
+    background: var(--surface);
     min-height: 90px;
     display: flex;
     align-items: center;
@@ -212,7 +226,7 @@
   .toolbar button.ghost{
     background: transparent; color: var(--moss-deep); border: 1px solid var(--line); text-transform:none; letter-spacing:0; padding: 7px 12px; font-size: 12px;
   }
-  .toolbar button.ghost:hover{ background: #fff; }
+  .toolbar button.ghost:hover{ background: var(--surface); }
 
   @media (max-width: 620px){
     .row{ grid-template-columns: 1fr; }
@@ -223,7 +237,8 @@
 <body>
 <div class="wrap">
 
-  <header>
+  <header style="position:relative;">
+    <button type="button" id="themeToggle" aria-label="Toggle dark mode" style="position:absolute; top:0; right:0; background:var(--paper-raised); border:1px solid var(--line); border-radius:20px; padding:6px 12px; font-size:13px; cursor:pointer; font-family:'IBM Plex Mono', monospace; color:var(--ink-soft);">🌙</button>
     <div class="eyebrow">
       <svg class="mark" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <circle cx="17" cy="17" r="15.5" stroke="#3E6350" stroke-width="1"/>
@@ -318,10 +333,14 @@
           <select id="pyrenoid_class">
             <option value="">Not reported</option>
             <option value="central">Central</option>
-            <option value="lobed">Lobed</option>
+            <option value="stalked">Stalked</option>
             <option value="peripheral">Peripheral</option>
             <option value="other">Other</option>
           </select>
+        </div>
+        <div class="field" id="pyrenoidClassOtherWrap" style="display:none;">
+          <label for="pyrenoid_class_other">Specify</label>
+          <input type="text" id="pyrenoid_class_other" placeholder="e.g. reticulate">
         </div>
       </div>
     </fieldset>
@@ -494,12 +513,42 @@
     </div>
   </div>
 
+  <footer style="margin-top:56px; padding-top:28px; border-top:1px solid var(--line);">
+    <p class="sub" style="max-width:60ch;">This project exists to bring together the pyrenoid literature of the last fifty years — presence, absence, and ultrastructure scattered across decades of electron microscopy papers — into one place, tied to phylogeny, so we can start asking when and how often pyrenoids evolved across the algae.</p>
+    <p class="sub" style="max-width:60ch;">Records are reviewed before joining the curated dataset. Access to the full backend can be requested by contacting <a href="mailto:james.barrett@york.ac.uk" style="color:var(--moss-deep);">james.barrett@york.ac.uk</a>.</p>
+    <p class="sub" id="entryCount" style="font-family:'IBM Plex Mono', monospace; font-size:12px;"></p>
+  </footer>
+
 </div>
 
 <script>
 const SUPABASE_URL = 'https://iplxcpyzefjbtnfacejd.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_7XGJfoPFKERlr6KzHWELtA_oG0WcHDn';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+const themeToggle = document.getElementById('themeToggle');
+function applyTheme(dark){
+  document.body.classList.toggle('dark-mode', dark);
+  themeToggle.textContent = dark ? '☀️' : '🌙';
+}
+let isDark = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+applyTheme(isDark);
+themeToggle.addEventListener('click', () => {
+  isDark = !isDark;
+  applyTheme(isDark);
+});
+
+async function loadEntryCount(){
+  const el = document.getElementById('entryCount');
+  try {
+    const { data, error } = await supabaseClient.rpc('get_submission_count');
+    if (error) throw error;
+    el.textContent = data + (data === 1 ? ' record submitted so far.' : ' records submitted so far.');
+  } catch(err){
+    el.textContent = '';
+  }
+}
+loadEntryCount();
 
 const chips = document.querySelectorAll('#image_rights_chips .chip');
 chips.forEach(chip => {
@@ -609,6 +658,10 @@ document.getElementById('species_name').addEventListener('input', () => {
 
 document.getElementById('presence_call').addEventListener('change', (e) => {
   document.getElementById('pyrenoidClassWrap').style.display = (e.target.value === 'present') ? '' : 'none';
+});
+
+document.getElementById('pyrenoid_class').addEventListener('change', (e) => {
+  document.getElementById('pyrenoidClassOtherWrap').style.display = (e.target.value === 'other') ? '' : 'none';
 });
 
 document.getElementById('traversing_membranes').addEventListener('change', (e) => {
@@ -738,6 +791,7 @@ form.addEventListener('submit', async (e) => {
     presence_call: fieldVal('presence_call'),
     method: fieldVal('method'),
     pyrenoid_class: fieldVal('pyrenoid_class'),
+    pyrenoid_class_other: fieldVal('pyrenoid_class_other'),
     traversing_membranes: fieldVal('traversing_membranes'),
     continuous_with_thylakoids: fieldVal('continuous_with_thylakoids'),
     membrane_type: fieldVal('membrane_type'),
@@ -803,6 +857,7 @@ form.addEventListener('submit', async (e) => {
     document.getElementById('taxonomyLookupStatus').textContent = '';
     resetImageBox();
     thanksPanel.style.display = 'block';
+    loadEntryCount();
   } catch(err){
     setStatus('Could not save this submission (' + (err.message || String(err)) + ')', 'err');
   } finally {
