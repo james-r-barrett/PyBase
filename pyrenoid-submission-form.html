@@ -367,7 +367,7 @@
       <div class="field">
         <label>Screenshot of the figure <span class="hint">click the box, then paste (Ctrl+V / Cmd+V) — or click to browse a file. Max 5 MB.</span></label>
         <div id="pasteBox" tabindex="0">
-          <span id="pasteBoxEmpty">Click here, then paste an image — or click to choose a file</span>
+          <span id="pasteBoxEmpty">Click here, then paste an image (Ctrl+V / Cmd+V)<br><button type="button" id="browseBtn" style="margin-top:8px; background:transparent; color:var(--moss-deep); border:1px solid var(--line); text-transform:none; letter-spacing:0; padding:6px 12px; font-size:12px; border-radius:var(--radius); cursor:pointer;">Choose file instead</button></span>
           <img id="pastePreview" style="display:none;">
         </div>
         <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
@@ -556,7 +556,6 @@ function acceptImageFile(file){
   pasteStatus.textContent = 'Ready to upload (' + humanSize(file.size) + ') — attached when you submit.';
 }
 
-pasteBox.addEventListener('click', () => { if (!pastedImageBlob) fileInput.click(); });
 pasteBox.addEventListener('paste', (e) => {
   const items = (e.clipboardData || window.clipboardData).items;
   for (const item of items){
@@ -571,12 +570,16 @@ pasteBox.addEventListener('paste', (e) => {
 fileInput.addEventListener('change', () => {
   if (fileInput.files && fileInput.files[0]) acceptImageFile(fileInput.files[0]);
 });
+document.getElementById('browseBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  fileInput.click();
+});
 clearImageBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   pastedImageBlob = null;
   pastePreview.src = '';
   pastePreview.style.display = 'none';
-  pasteBoxEmpty.style.display = 'inline';
+  pasteBoxEmpty.style.display = 'block';
   clearImageBtn.style.display = 'none';
   pasteStatus.textContent = '';
   fileInput.value = '';
@@ -586,7 +589,7 @@ function resetImageBox(){
   pastedImageBlob = null;
   pastePreview.src = '';
   pastePreview.style.display = 'none';
-  pasteBoxEmpty.style.display = 'inline';
+  pasteBoxEmpty.style.display = 'block';
   clearImageBtn.style.display = 'none';
   pasteStatus.textContent = '';
   fileInput.value = '';
