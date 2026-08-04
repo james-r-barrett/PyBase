@@ -30,16 +30,23 @@ EUROPEPMC_URL = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
 OPENALEX_URL = "https://api.openalex.org/works"
 
 # Add more queries here over time as you learn what phrasing works / doesn't.
+# "fine structure" is deliberately included — it's the period-typical phrase
+# 1960s-80s EM papers use instead of "ultrastructure".
 EUROPEPMC_QUERIES = [
-    'pyrenoid AND (ultrastructure OR "electron microscopy")',
+    'pyrenoid AND (ultrastructure OR "electron microscopy" OR "fine structure")',
     'pyrenoid AND (chloroplast OR plastid) AND algae',
+    'pyrenoid AND (taxonomy OR morphology) AND algae',
 ]
 OPENALEX_QUERIES = [
     "pyrenoid ultrastructure",
-    "pyrenoid algae electron microscopy",
+    "pyrenoid fine structure algae",
+    "pyrenoid electron microscopy",
 ]
 
-PAGE_SIZE = 100
+# How many results to pull per query, per source, via pagination. Given the
+# free daily OpenAlex credit covers ~100,000 search results, this is nowhere
+# near the ceiling — raise it further if the queue still looks thin.
+MAX_RESULTS_PER_QUERY = 1000
 
 
 def normalize_doi(doi):
@@ -48,18 +55,31 @@ def normalize_doi(doi):
     return re.sub(r"^https?://(dx\.)?doi\.org/", "", doi, flags=re.I).strip().lower()
 
 
-def fetch_europepmc(query):
-    """Returns a list of dicts already normalized to
-    {doi, title, authors, year, journal}."""
-    params = {
-        "query": query,
-        "format": "json",
-        "pageSize": PAGE_SIZE,
-        "resultType": "core",
-    }
-    resp = requests.get(EUROPEPMC_URL, params=params, timeout=30)
-    resp.raise_for_status()
-    results = resp.json().get("resultList", {}).get("result", [])
+def fetch_europepmc(query, max_results=MAX_RESULTS_PER_QUERY):
+    """Paginates via Europe PMC's cursorMark mechanism. Returns a list of
+    dicts normalized to {doi, title, authors, year, journal}."""
+    results = []
+    cursor_mark = "*"
+    while len(results) < max_results:
+        params = {
+            "query": query,
+            "format": "json",
+            "pageSize": min(100, max_results - len(results)),
+            "resultType": "core",
+            "cursorMark": cursor_mark,
+        }
+        resp = requests.get(EUROPEPMC_URL, params=params, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+        batch = data.get("resultList", {}).get("result", [])
+        if not batch:
+            break
+        results.extend(batch)
+        next_cursor = data.get("nextCursorMark")
+        if not next_cursor or next_cursor == cursor_mark:
+            break
+        cursor_mark = next_cursor
+
     return [
         {
             "doi": r.get("doi"),
@@ -72,17 +92,30 @@ def fetch_europepmc(query):
     ]
 
 
-def fetch_openalex(query):
-    """Returns a list of dicts already normalized to
-    {doi, title, authors, year, journal}."""
-    params = {
-        "search": query,
-        "per_page": PAGE_SIZE,
-        "api_key": OPENALEX_API_KEY,
-    }
-    resp = requests.get(OPENALEX_URL, params=params, timeout=30)
-    resp.raise_for_status()
-    results = resp.json().get("results", [])
+def fetch_openalex(query, max_results=MAX_RESULTS_PER_QUERY):
+    """Paginates via OpenAlex's cursor mechanism. Returns a list of dicts
+    normalized to {doi, title, authors, year, journal}."""
+    results = []
+    cursor = "*"
+    while len(results) < max_results:
+        params = {
+            "search": query,
+            "per_page": min(200, max_results - len(results)),
+            "cursor": cursor,
+            "api_key": OPENALEX_API_KEY,
+        }
+        resp = requests.get(OPENALEX_URL, params=params, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+        batch = data.get("results", [])
+        if not batch:
+            break
+        results.extend(batch)
+        next_cursor = (data.get("meta") or {}).get("next_cursor")
+        if not next_cursor:
+            break
+        cursor = next_cursor
+
     normalized = []
     for r in results:
         authorships = r.get("authorships") or []
@@ -113,20 +146,29 @@ SOURCES = [
 
 def fetch_known_dois():
     """Pull every DOI already present in submissions or literature_queue,
-    so we don't re-suggest something already logged or already queued."""
+    so we don't re-suggest something already logged or already queued.
+    Paginated via PostgREST's Range header — the default 1000-row cap would
+    otherwise silently miss entries once either table grows past that."""
     known = set()
     for table in ("submissions", "literature_queue"):
-        resp = requests.get(
-            f"{SUPABASE_URL}/rest/v1/{table}",
-            headers=HEADERS,
-            params={"select": "doi", "doi": "not.is.null"},
-            timeout=30,
-        )
-        resp.raise_for_status()
-        for row in resp.json():
-            d = normalize_doi(row.get("doi"))
-            if d:
-                known.add(d)
+        start = 0
+        page_size = 1000
+        while True:
+            resp = requests.get(
+                f"{SUPABASE_URL}/rest/v1/{table}",
+                headers={**HEADERS, "Range": f"{start}-{start + page_size - 1}"},
+                params={"select": "doi", "doi": "not.is.null"},
+                timeout=30,
+            )
+            resp.raise_for_status()
+            batch = resp.json()
+            for row in batch:
+                d = normalize_doi(row.get("doi"))
+                if d:
+                    known.add(d)
+            if len(batch) < page_size:
+                break
+            start += page_size
     return known
 
 
@@ -148,8 +190,10 @@ def insert_candidate(citation, doi, source_name):
 def main():
     known_dois = fetch_known_dois()
     added = 0
+    per_source_counts = {}
 
     for source_name, fetch_fn, queries in SOURCES:
+        per_source_counts[source_name] = 0
         for query in queries:
             try:
                 results = fetch_fn(query)
@@ -157,10 +201,10 @@ def main():
                 print(f"[{source_name}] query failed, skipping: {query!r} ({e})", file=sys.stderr)
                 continue
 
+            print(f"[{source_name}] {query!r} -> {len(results)} result(s) fetched")
+
             for r in results:
                 doi = normalize_doi(r["doi"])
-                # Skip anything with no DOI at all — without one, dedup is
-                # unreliable and it's easy to flood the queue with repeats.
                 if not doi or doi in known_dois:
                     continue
 
@@ -168,8 +212,11 @@ def main():
                 insert_candidate(citation, r["doi"], source_name)
                 known_dois.add(doi)
                 added += 1
+                per_source_counts[source_name] += 1
 
     print(f"Added {added} new candidate reference(s) to literature_queue.")
+    for name, count in per_source_counts.items():
+        print(f"  {name}: {count}")
 
 
 if __name__ == "__main__":
