@@ -172,10 +172,18 @@ def fetch_known_dois():
     return known
 
 
-def insert_candidate(citation, doi, source_name):
+def safe_year(y):
+    try:
+        return int(y)
+    except (TypeError, ValueError):
+        return None
+
+
+def insert_candidate(citation, doi, source_name, pub_year=None):
     payload = {
         "citation": citation,
         "doi": doi,
+        "pub_year": pub_year,
         "notes": f"auto-added from {source_name} scan",
     }
     resp = requests.post(
@@ -209,7 +217,7 @@ def main():
                     continue
 
                 citation = f"{r['authors']} ({r['year']}). {r['title']}. {r['journal']}."
-                insert_candidate(citation, r["doi"], source_name)
+                insert_candidate(citation, r["doi"], source_name, pub_year=safe_year(r["year"]))
                 known_dois.add(doi)
                 added += 1
                 per_source_counts[source_name] += 1
