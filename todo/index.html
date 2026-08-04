@@ -215,9 +215,17 @@ async function loadQueue(){
   const resultsEl = document.getElementById('results');
   resultsEl.innerHTML = '<div class="empty">Loading…</div>';
   try {
-    const { data, error } = await supabaseClient.from('literature_todo').select('*');
-    if (error) throw error;
-    allItems = data || [];
+    let items = [];
+    let from = 0;
+    const pageSize = 1000;
+    while (true){
+      const { data, error } = await supabaseClient.from('literature_todo').select('*').range(from, from + pageSize - 1);
+      if (error) throw error;
+      items = items.concat(data || []);
+      if (!data || data.length < pageSize) break; // last page reached
+      from += pageSize;
+    }
+    allItems = items;
     renderItems(sortItems(allItems, document.getElementById('sortSelect').value));
   } catch(err){
     resultsEl.innerHTML = '<div class="empty">Could not load the list (' + escapeHtml(err.message || String(err)) + ').</div>';

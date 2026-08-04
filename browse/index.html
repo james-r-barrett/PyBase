@@ -318,9 +318,17 @@ async function loadRecords(){
   const resultsEl = document.getElementById('results');
   resultsEl.innerHTML = '<div class="empty">Loading…</div>';
   try {
-    const { data, error } = await supabaseClient.from('public_records').select('*').order('species_name', { ascending: true });
-    if (error) throw error;
-    allRecords = data || [];
+    let data = [];
+    let from = 0;
+    const pageSize = 1000;
+    while (true){
+      const { data: batch, error } = await supabaseClient.from('public_records').select('*').order('species_name', { ascending: true }).range(from, from + pageSize - 1);
+      if (error) throw error;
+      data = data.concat(batch || []);
+      if (!batch || batch.length < pageSize) break;
+      from += pageSize;
+    }
+    allRecords = data;
 
     const divisions = [...new Set(allRecords.map(r => r.phylum).filter(Boolean))].sort();
     const select = document.getElementById('divisionFilter');
