@@ -252,12 +252,16 @@
       <legend>Source</legend>
       <div class="row">
         <div class="field">
-          <label for="reference_citation">Reference citation <span class="req">*</span></label>
-          <input type="text" id="reference_citation" placeholder="Author(s), year, journal" required>
+          <label for="doi">DOI <span class="hint">paste it here first, then look it up</span></label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="doi" placeholder="10.1073/pnas.1213498109 or a doi.org link" style="flex:1;">
+            <button type="button" id="doiLookupBtn" class="ghost" style="background:transparent; color:var(--moss-deep); border:1px solid var(--line); text-transform:none; letter-spacing:0; padding:9px 14px; font-size:12.5px; border-radius:var(--radius); cursor:pointer; white-space:nowrap;">Look up</button>
+          </div>
+          <div id="doiLookupStatus" style="font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ink-soft); margin-top:6px;"></div>
         </div>
         <div class="field">
-          <label for="doi">DOI / link <span class="hint">if available</span></label>
-          <input type="url" id="doi" placeholder="https://doi.org/...">
+          <label for="reference_citation">Reference citation <span class="req">*</span> <span class="hint">fills in automatically from the DOI, or type it yourself</span></label>
+          <input type="text" id="reference_citation" placeholder="Author(s), year, journal" required>
         </div>
       </div>
     </fieldset>
@@ -390,6 +394,60 @@ chips.forEach(chip => {
   });
 });
 
+let referenceMeta = { title: '', authors: '', year: null, journal: '' };
+
+function extractBareDoi(raw){
+  return raw.trim().replace(/^https?:\/\/(dx\.)?doi\.org\//i, '').replace(/^doi:/i, '').trim();
+}
+
+function formatAuthors(authorList){
+  if (!Array.isArray(authorList) || authorList.length === 0) return '';
+  const names = authorList.map(a => [a.given, a.family].filter(Boolean).join(' ').trim()).filter(Boolean);
+  if (names.length <= 3) return names.join(', ');
+  return names[0] + ' et al.';
+}
+
+function extractYear(msg){
+  const parts = (msg['published-print'] || msg['published-online'] || msg['published'] || msg.created || {})['date-parts'];
+  return (parts && parts[0] && parts[0][0]) ? parts[0][0] : null;
+}
+
+async function lookupDoi(){
+  const doiStatus = document.getElementById('doiLookupStatus');
+  const rawDoi = fieldVal('doi');
+  if (!rawDoi){
+    doiStatus.textContent = 'Paste a DOI first.';
+    return;
+  }
+  const bareDoi = extractBareDoi(rawDoi);
+  doiStatus.textContent = 'Looking up…';
+  try {
+    const res = await fetch('https://api.crossref.org/works/' + encodeURIComponent(bareDoi));
+    if (!res.ok) throw new Error('DOI not found (' + res.status + ')');
+    const data = await res.json();
+    const msg = data.message || {};
+    const title = (msg.title && msg.title[0]) || '';
+    const journal = (msg['container-title'] && msg['container-title'][0]) || '';
+    const authors = formatAuthors(msg.author);
+    const year = extractYear(msg);
+
+    referenceMeta = { title, authors, year, journal };
+
+    const citationParts = [authors, year ? '(' + year + ')' : '', title, journal].filter(Boolean);
+    document.getElementById('reference_citation').value = citationParts.join('. ').replace(/\.\./g, '.');
+    doiStatus.textContent = 'Matched: ' + (title || 'reference found') + (journal ? ' — ' + journal : '');
+  } catch(err){
+    referenceMeta = { title: '', authors: '', year: null, journal: '' };
+    doiStatus.textContent = 'Could not resolve that DOI — fill in the citation manually.';
+  }
+}
+
+document.getElementById('doiLookupBtn').addEventListener('click', lookupDoi);
+document.getElementById('doi').addEventListener('input', () => {
+  referenceMeta = { title: '', authors: '', year: null, journal: '' };
+  document.getElementById('doiLookupStatus').textContent = '';
+});
+
 const form = document.getElementById('form');
 const statusMsg = document.getElementById('statusMsg');
 const submitBtn = document.getElementById('submitBtn');
@@ -429,7 +487,11 @@ form.addEventListener('submit', async (e) => {
     matrix_appearance: fieldVal('matrix_appearance'),
     image_url: fieldVal('image_url'),
     image_rights: activeChip ? activeChip.value : '',
-    notes: fieldVal('notes')
+    notes: fieldVal('notes'),
+    reference_title: referenceMeta.title || null,
+    reference_authors: referenceMeta.authors || null,
+    reference_year: referenceMeta.year || null,
+    reference_journal: referenceMeta.journal || null
   };
 
   if (!record.species_name || !record.reference_citation || !record.presence_call || !record.submitter_email){
@@ -444,6 +506,8 @@ form.addEventListener('submit', async (e) => {
     setStatus('Submitted. Thank you.', 'ok');
     form.reset();
     chips.forEach(c => c.classList.remove('active'));
+    referenceMeta = { title: '', authors: '', year: null, journal: '' };
+    document.getElementById('doiLookupStatus').textContent = '';
     thanksPanel.style.display = 'block';
   } catch(err){
     setStatus('Could not save this submission (' + (err.message || String(err)) + ')', 'err');
