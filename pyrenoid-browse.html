@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pyrenoid Evolution Database — Browse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --paper: #F1ECDD;
+    --paper-raised: #F8F4E9;
+    --ink: #16241C;
+    --ink-soft: #4B5A50;
+    --moss: #3E6350;
+    --moss-deep: #1F3D2E;
+    --ochre: #A97A22;
+    --line: #C9C0A6;
+    --danger: #8C3B2E;
+    --surface: #FFFFFF;
+    --radius: 3px;
+  }
+  body.dark-mode{
+    --paper: #16211C;
+    --paper-raised: #1D2A22;
+    --ink: #EAE6D7;
+    --ink-soft: #9FAEA3;
+    --moss: #6FA184;
+    --moss-deep: #9FCBAE;
+    --ochre: #E0B15E;
+    --line: #34423A;
+    --danger: #E08669;
+    --surface: #22302A;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', serif;
+    padding: 48px 20px 80px;
+    line-height: 1.5;
+    transition: background 0.15s, color 0.15s;
+  }
+  .wrap{ max-width: 880px; margin: 0 auto; }
+
+  header{ margin-bottom: 32px; position:relative; }
+  #themeToggle{
+    position:absolute; top:0; right:0;
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:20px;
+    padding:6px 12px; font-size:13px; cursor:pointer;
+    font-family:'IBM Plex Mono', monospace; color:var(--ink-soft);
+  }
+  .eyebrow{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--moss);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom: 10px;
+  }
+  .eyebrow::after{ content:""; flex:1; height:1px; background: var(--line); }
+  h1{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 32px;
+    margin: 0 0 8px;
+    color: var(--moss-deep);
+    letter-spacing: -0.01em;
+  }
+  .sub{ color: var(--ink-soft); font-size: 15px; max-width: 62ch; }
+
+  .controls{
+    display:flex; gap:10px; margin: 24px 0 20px; flex-wrap:wrap;
+  }
+  #searchInput{
+    flex:1; min-width:220px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13.5px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--ink);
+  }
+  #searchInput:focus{ outline: 2px solid var(--moss); outline-offset: 1px; }
+  select#divisionFilter{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--ink);
+  }
+
+  #resultMeta{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+  }
+
+  .record{
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 14px;
+  }
+  .record-top{
+    display:flex; justify-content: space-between; align-items:baseline; gap: 12px; margin-bottom: 6px; flex-wrap:wrap;
+  }
+  .record-species{ font-family:'Fraunces', serif; font-style: italic; font-size: 18px; color: var(--ink); }
+  .record-presence{
+    font-family:'IBM Plex Mono', monospace; font-size: 10.5px; text-transform:uppercase; letter-spacing:0.06em;
+    padding: 3px 9px; border-radius: 20px; white-space:nowrap;
+  }
+  .p-present{ background:#DCE7DC; color:#1F3D2E; }
+  .p-absent{ background:#EDE0DC; color:#8C3B2E; }
+  .p-equivocal, .p-not_assessed{ background:#EDE7D3; color:#A97A22; }
+  body.dark-mode .p-present{ background:#233A2C; color:#9FCBAE; }
+  body.dark-mode .p-absent{ background:#3A2A24; color:#E08669; }
+  body.dark-mode .p-equivocal, body.dark-mode .p-not_assessed{ background:#3A331F; color:#E0B15E; }
+
+  .record-taxonomy{
+    font-family:'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--ink-soft); margin-bottom: 10px;
+  }
+  .record-citation{ font-size: 13.5px; color: var(--ink-soft); margin-bottom: 10px; }
+  .record-citation a{ color: var(--moss-deep); }
+  .record-detail{
+    display:flex; flex-wrap:wrap; gap: 6px 16px;
+    font-family:'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--ink-soft);
+  }
+  .record-detail span b{ color: var(--ink); font-weight: 500; }
+
+  .empty{ font-family:'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--ink-soft); padding: 30px 0; text-align:center; }
+
+  footer{ margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <button type="button" id="themeToggle" aria-label="Toggle dark mode">🌙</button>
+    <div class="eyebrow">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="17" cy="17" r="15.5" stroke="#3E6350" stroke-width="1"/>
+        <circle cx="17" cy="17" r="10.5" stroke="#3E6350" stroke-width="1" stroke-dasharray="2 2"/>
+        <circle cx="17" cy="17" r="5" fill="#A97A22" opacity="0.85"/>
+      </svg>
+      Pyrenoid Evolution Database — Browse
+    </div>
+    <h1>Curated records</h1>
+    <p class="sub">Reviewed pyrenoid presence/absence and ultrastructure records, by species. Figures aren't shown here — see the underlying reference for images. Want the full dataset (including in-review records and images)? <a href="mailto:james.barrett@york.ac.uk" style="color:var(--moss-deep);">Contact James Barrett</a>.</p>
+  </header>
+
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="Search species, family, citation…">
+    <select id="divisionFilter">
+      <option value="">All divisions</option>
+    </select>
+  </div>
+
+  <div id="resultMeta"></div>
+  <div id="results"></div>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://iplxcpyzefjbtnfacejd.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_7XGJfoPFKERlr6KzHWELtA_oG0WcHDn';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+const themeToggle = document.getElementById('themeToggle');
+function applyTheme(dark){
+  document.body.classList.toggle('dark-mode', dark);
+  themeToggle.textContent = dark ? '☀️' : '🌙';
+}
+let isDark = false;
+applyTheme(isDark);
+themeToggle.addEventListener('click', () => { isDark = !isDark; applyTheme(isDark); });
+
+let allRecords = [];
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function renderResults(records){
+  const resultsEl = document.getElementById('results');
+  const metaEl = document.getElementById('resultMeta');
+  metaEl.textContent = records.length + (records.length === 1 ? ' record' : ' records');
+
+  if (records.length === 0){
+    resultsEl.innerHTML = '<div class="empty">No records match.</div>';
+    return;
+  }
+
+  resultsEl.innerHTML = records.map(r => {
+    const presenceClass = 'p-' + (r.presence_call || 'not_assessed');
+    const taxRank = [r.phylum, r.class, r.family].filter(Boolean).join(' \u203a ') || 'Taxonomy not matched';
+    const citationParts = [r.reference_authors, r.reference_year ? '(' + r.reference_year + ')' : '', r.reference_title].filter(Boolean);
+    const citationText = citationParts.length ? citationParts.join(' ') : (r.reference_citation || '');
+    const citationLink = r.doi ? '<a href="https://doi.org/' + encodeURIComponent(r.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i,'')) + '" target="_blank" rel="noopener">' + escapeHtml(citationText) + '</a>' : escapeHtml(citationText);
+
+    const details = [];
+    if (r.pyrenoid_class) details.push('<span><b>Class:</b> ' + escapeHtml(r.pyrenoid_class === 'other' ? (r.pyrenoid_class_other || 'other') : r.pyrenoid_class) + '</span>');
+    if (r.traversing_membranes) details.push('<span><b>Traversing membranes:</b> ' + escapeHtml(r.traversing_membranes) + '</span>');
+    if (r.diffusion_barrier) details.push('<span><b>Diffusion barrier:</b> ' + escapeHtml(r.diffusion_barrier) + (r.diffusion_barrier_type ? ' (' + escapeHtml(r.diffusion_barrier_type) + ')' : '') + '</span>');
+    if (r.plastoglobuli) details.push('<span><b>Plastoglobuli:</b> ' + escapeHtml(r.plastoglobuli) + '</span>');
+    if (r.method) details.push('<span><b>Method:</b> ' + escapeHtml(r.method.replace('_',' ')) + '</span>');
+
+    return `
+      <div class="record">
+        <div class="record-top">
+          <span class="record-species">${escapeHtml(r.species_name || '(unnamed)')}</span>
+          <span class="record-presence ${presenceClass}">${escapeHtml((r.presence_call || 'not assessed').replace('_',' '))}</span>
+        </div>
+        <div class="record-taxonomy">${escapeHtml(taxRank)}</div>
+        <div class="record-citation">${citationLink}</div>
+        ${details.length ? '<div class="record-detail">' + details.join('') + '</div>' : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function applyFilters(){
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const division = document.getElementById('divisionFilter').value;
+  const filtered = allRecords.filter(r => {
+    if (division && r.phylum !== division) return false;
+    if (!q) return true;
+    const haystack = [r.species_name, r.family, r.genus, r.reference_citation, r.reference_title, r.reference_authors].filter(Boolean).join(' ').toLowerCase();
+    return haystack.includes(q);
+  });
+  renderResults(filtered);
+}
+
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+document.getElementById('divisionFilter').addEventListener('change', applyFilters);
+
+async function loadRecords(){
+  const resultsEl = document.getElementById('results');
+  resultsEl.innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    const { data, error } = await supabaseClient.from('public_records').select('*').order('species_name', { ascending: true });
+    if (error) throw error;
+    allRecords = data || [];
+
+    const divisions = [...new Set(allRecords.map(r => r.phylum).filter(Boolean))].sort();
+    const select = document.getElementById('divisionFilter');
+    divisions.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d; opt.textContent = d;
+      select.appendChild(opt);
+    });
+
+    applyFilters();
+  } catch(err){
+    resultsEl.innerHTML = '<div class="empty">Could not load records (' + escapeHtml(err.message || String(err)) + ').</div>';
+  }
+}
+
+loadRecords();
+</script>
+</body>
+</html>
