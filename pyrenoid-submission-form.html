@@ -531,7 +531,7 @@ function applyTheme(dark){
   document.body.classList.toggle('dark-mode', dark);
   themeToggle.textContent = dark ? '☀️' : '🌙';
 }
-let isDark = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+let isDark = false; // default to light mode regardless of system preference
 applyTheme(isDark);
 themeToggle.addEventListener('click', () => {
   isDark = !isDark;
@@ -541,9 +541,15 @@ themeToggle.addEventListener('click', () => {
 async function loadEntryCount(){
   const el = document.getElementById('entryCount');
   try {
-    const { data, error } = await supabaseClient.rpc('get_submission_count');
+    const { data, error } = await supabaseClient.rpc('get_submission_counts_by_division');
     if (error) throw error;
-    el.textContent = data + (data === 1 ? ' record submitted so far.' : ' records submitted so far.');
+    if (!data || data.length === 0){
+      el.textContent = 'No records submitted yet.';
+      return;
+    }
+    const total = data.reduce((sum, row) => sum + Number(row.entry_count), 0);
+    const breakdown = data.map(row => row.division + ': ' + row.entry_count).join('  \u00b7  ');
+    el.textContent = total + (total === 1 ? ' record submitted so far — ' : ' records submitted so far — ') + breakdown;
   } catch(err){
     el.textContent = '';
   }
