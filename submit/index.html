@@ -314,6 +314,7 @@
         <div class="field">
           <label for="reference_citation">Reference citation <span class="req">*</span> <span class="hint">fills in automatically from the DOI, or type it yourself</span></label>
           <input type="text" id="reference_citation" placeholder="Author(s), year, journal" required>
+          <div id="duplicateWarning" style="font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ochre); margin-top:6px;"></div>
         </div>
       </div>
       <div class="row single">
@@ -687,6 +688,31 @@ document.getElementById('presence_call').addEventListener('change', (e) => {
   document.getElementById('pyrenoidClassWrap').style.display = (e.target.value === 'present') ? '' : 'none';
 });
 
+async function checkForDuplicate(){
+  const warnEl = document.getElementById('duplicateWarning');
+  const species = fieldVal('species_name');
+  const doi = fieldVal('doi');
+  const citation = fieldVal('reference_citation');
+  if (!species || (!doi && !citation)){
+    warnEl.textContent = '';
+    return;
+  }
+  try {
+    const { data, error } = await supabaseClient.rpc('check_possible_duplicate', {
+      p_species: species, p_doi: doi || null, p_reference: citation || null
+    });
+    if (error) throw error;
+    warnEl.textContent = (data && data > 0)
+      ? '\u26a0 This species + reference combination looks like it may already be logged. Still fine to submit if this is a separate observation (e.g. a different figure).'
+      : '';
+  } catch(err){
+    warnEl.textContent = '';
+  }
+}
+document.getElementById('species_name').addEventListener('blur', checkForDuplicate);
+document.getElementById('doi').addEventListener('blur', checkForDuplicate);
+document.getElementById('reference_citation').addEventListener('blur', checkForDuplicate);
+
 document.getElementById('pyrenoid_class').addEventListener('change', (e) => {
   document.getElementById('pyrenoidClassOtherWrap').style.display = (e.target.value === 'other') ? '' : 'none';
 });
@@ -884,6 +910,7 @@ form.addEventListener('submit', async (e) => {
     taxonomyMeta = { kingdom: '', phylum: '', class_: '', order_rank: '', family: '', genus: '', gbif_key: null, match_type: '' };
     document.getElementById('taxonomyLookupStatus').textContent = '';
     resetImageBox();
+    document.getElementById('duplicateWarning').textContent = '';
     thanksPanel.style.display = 'block';
     loadEntryCount();
   } catch(err){
