@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pyrenoid Evolution Database</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --paper: #F1ECDD;
+    --paper-raised: #F8F4E9;
+    --ink: #16241C;
+    --ink-soft: #4B5A50;
+    --moss: #3E6350;
+    --moss-deep: #1F3D2E;
+    --ochre: #A97A22;
+    --line: #C9C0A6;
+    --surface: #FFFFFF;
+    --radius: 3px;
+  }
+  body.dark-mode{
+    --paper: #16211C;
+    --paper-raised: #1D2A22;
+    --ink: #EAE6D7;
+    --ink-soft: #9FAEA3;
+    --moss: #6FA184;
+    --moss-deep: #9FCBAE;
+    --ochre: #E0B15E;
+    --line: #34423A;
+    --surface: #22302A;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', serif;
+    padding: 48px 20px 80px;
+    line-height: 1.5;
+    transition: background 0.15s, color 0.15s;
+  }
+  .wrap{ max-width: 680px; margin: 0 auto; }
+
+  .sitenav{
+    display:flex; gap:18px; margin-bottom:28px;
+    font-family:'IBM Plex Mono', monospace; font-size:12px;
+    letter-spacing:0.05em; text-transform:uppercase;
+  }
+  .sitenav a{ color:var(--ink-soft); text-decoration:none; padding-bottom:3px; border-bottom:2px solid transparent; }
+  .sitenav a:hover{ color:var(--moss-deep); }
+  .sitenav a.active{ color:var(--moss-deep); border-bottom-color:var(--moss-deep); }
+
+  header{ margin-bottom: 36px; position:relative; }
+  #themeToggle{
+    position:absolute; top:0; right:0;
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:20px;
+    padding:6px 12px; font-size:13px; cursor:pointer;
+    font-family:'IBM Plex Mono', monospace; color:var(--ink-soft);
+  }
+  .eyebrow{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--moss);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom: 10px;
+  }
+  .eyebrow::after{ content:""; flex:1; height:1px; background: var(--line); }
+  h1{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 36px;
+    margin: 0 0 12px;
+    color: var(--moss-deep);
+    letter-spacing: -0.01em;
+  }
+  .sub{ color: var(--ink-soft); font-size: 15.5px; max-width: 58ch; }
+
+  .cards{ display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 32px 0; }
+  .card-link{
+    display:block;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px;
+    text-decoration:none;
+    color: var(--ink);
+    transition: border-color 0.15s;
+  }
+  .card-link:hover{ border-color: var(--moss); }
+  .card-link .card-title{
+    font-family:'Fraunces', serif; font-weight:600; font-size: 19px; color: var(--moss-deep); margin-bottom: 6px;
+  }
+  .card-link .card-desc{ font-size: 13.5px; color: var(--ink-soft); }
+
+  #entryCount{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color: var(--ink-soft);
+  }
+  footer{ margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); }
+
+  @media (max-width: 560px){ .cards{ grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="sitenav">
+    <a href="./" class="active">Home</a>
+    <a href="submit/">Submit</a>
+    <a href="browse/">Browse</a>
+  </nav>
+
+  <header>
+    <button type="button" id="themeToggle" aria-label="Toggle dark mode">🌙</button>
+    <div class="eyebrow">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="17" cy="17" r="15.5" stroke="#3E6350" stroke-width="1"/>
+        <circle cx="17" cy="17" r="10.5" stroke="#3E6350" stroke-width="1" stroke-dasharray="2 2"/>
+        <circle cx="17" cy="17" r="5" fill="#A97A22" opacity="0.85"/>
+      </svg>
+      Pyrenoid Evolution Database
+    </div>
+    <h1>Cataloguing pyrenoids across the algae</h1>
+    <p class="sub">Bringing together fifty years of scattered ultrastructure literature — presence, absence, and structural detail, tied to phylogeny — to ask when and how often pyrenoids evolved.</p>
+  </header>
+
+  <div class="cards">
+    <a class="card-link" href="submit/">
+      <div class="card-title">Submit a record</div>
+      <div class="card-desc">Log a species-level observation from a paper you've read — presence/absence, ultrastructure, and the source.</div>
+    </a>
+    <a class="card-link" href="browse/">
+      <div class="card-title">Browse the data</div>
+      <div class="card-desc">Search reviewed, curated records by species, division, or reference.</div>
+    </a>
+  </div>
+
+  <footer>
+    <p class="sub" id="entryCount"></p>
+    <p class="sub">Access to the full backend (including in-review submissions and images) can be requested by contacting <a href="mailto:james.barrett@york.ac.uk" style="color:var(--moss-deep);">james.barrett@york.ac.uk</a>.</p>
+  </footer>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://iplxcpyzefjbtnfacejd.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_7XGJfoPFKERlr6KzHWELtA_oG0WcHDn';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+const themeToggle = document.getElementById('themeToggle');
+function applyTheme(dark){
+  document.body.classList.toggle('dark-mode', dark);
+  themeToggle.textContent = dark ? '☀️' : '🌙';
+}
+let isDark = false;
+applyTheme(isDark);
+themeToggle.addEventListener('click', () => { isDark = !isDark; applyTheme(isDark); });
+
+async function loadEntryCount(){
+  const el = document.getElementById('entryCount');
+  try {
+    const { data, error } = await supabaseClient.rpc('get_submission_counts_by_division');
+    if (error) throw error;
+    if (!data || data.length === 0){ el.textContent = 'No records submitted yet.'; return; }
+    const total = data.reduce((sum, row) => sum + Number(row.entry_count), 0);
+    const breakdown = data.map(row => row.division + ': ' + row.entry_count).join('  \u00b7  ');
+    el.textContent = total + (total === 1 ? ' record submitted so far — ' : ' records submitted so far — ') + breakdown;
+  } catch(err){ el.textContent = ''; }
+}
+loadEntryCount();
+</script>
+</body>
+</html>

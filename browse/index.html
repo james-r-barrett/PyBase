@@ -141,10 +141,26 @@
   .empty{ font-family:'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--ink-soft); padding: 30px 0; text-align:center; }
 
   footer{ margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); }
+
+  .sitenav{
+    display:flex; gap:18px; margin-bottom:28px;
+    font-family:'IBM Plex Mono', monospace; font-size:12px;
+    letter-spacing:0.05em; text-transform:uppercase;
+  }
+  .sitenav a{ color:var(--ink-soft); text-decoration:none; padding-bottom:3px; border-bottom:2px solid transparent; }
+  .sitenav a:hover{ color:var(--moss-deep); }
+  .sitenav a.active{ color:var(--moss-deep); border-bottom-color:var(--moss-deep); }
 </style>
 </head>
 <body>
 <div class="wrap">
+
+  <nav class="sitenav">
+    <a href="../">Home</a>
+    <a href="../submit/">Submit</a>
+    <a href="../browse/" class="active">Browse</a>
+  </nav>
+
 
   <header>
     <button type="button" id="themeToggle" aria-label="Toggle dark mode">🌙</button>
@@ -204,7 +220,7 @@ function renderResults(records){
 
   resultsEl.innerHTML = records.map(r => {
     const presenceClass = 'p-' + (r.presence_call || 'not_assessed');
-    const taxRank = [r.phylum, r.class, r.family].filter(Boolean).join(' \u203a ') || 'Taxonomy not matched';
+    const taxRank = [r.kingdom, r.phylum, r.class, r.order_rank, r.family, r.genus].filter(Boolean).join(' \u203a ') || 'Taxonomy not matched';
     const citationParts = [r.reference_authors, r.reference_year ? '(' + r.reference_year + ')' : '', r.reference_title].filter(Boolean);
     const citationText = citationParts.length ? citationParts.join(' ') : (r.reference_citation || '');
     const citationLink = r.doi ? '<a href="https://doi.org/' + encodeURIComponent(r.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i,'')) + '" target="_blank" rel="noopener">' + escapeHtml(citationText) + '</a>' : escapeHtml(citationText);

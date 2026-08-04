@@ -232,10 +232,25 @@
     .row{ grid-template-columns: 1fr; }
     .card{ padding: 24px 18px 6px; }
   }
+
+  .sitenav{
+    display:flex; gap:18px; margin-bottom:28px;
+    font-family:'IBM Plex Mono', monospace; font-size:12px;
+    letter-spacing:0.05em; text-transform:uppercase;
+  }
+  .sitenav a{ color:var(--ink-soft); text-decoration:none; padding-bottom:3px; border-bottom:2px solid transparent; }
+  .sitenav a:hover{ color:var(--moss-deep); }
+  .sitenav a.active{ color:var(--moss-deep); border-bottom-color:var(--moss-deep); }
 </style>
 </head>
 <body>
 <div class="wrap">
+
+  <nav class="sitenav">
+    <a href="../">Home</a>
+    <a href="../submit/" class="active">Submit</a>
+    <a href="../browse/">Browse</a>
+  </nav>
 
   <header style="position:relative;">
     <button type="button" id="themeToggle" aria-label="Toggle dark mode" style="position:absolute; top:0; right:0; background:var(--paper-raised); border:1px solid var(--line); border-radius:20px; padding:6px 12px; font-size:13px; cursor:pointer; font-family:'IBM Plex Mono', monospace; color:var(--ink-soft);">🌙</button>
