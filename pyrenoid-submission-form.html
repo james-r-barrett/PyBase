@@ -190,6 +190,24 @@
     padding: 10px 12px;
   }
   .empty{ font-family:'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--ink-soft); padding: 18px 0; }
+
+  #pasteBox{
+    border: 1.5px dashed var(--line);
+    border-radius: var(--radius);
+    background: #fff;
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  #pasteBox:hover, #pasteBox:focus{ border-color: var(--moss); background: #FBFAF3; outline: none; }
+  #pasteBoxEmpty{ font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--ink-soft); }
+  #pastePreview{ max-width: 100%; max-height: 220px; border-radius: var(--radius); display: block; }
+
   .toolbar{ display:flex; justify-content: space-between; align-items:center; margin-bottom: 12px; gap: 10px; flex-wrap: wrap; }
   .toolbar button.ghost{
     background: transparent; color: var(--moss-deep); border: 1px solid var(--line); text-transform:none; letter-spacing:0; padding: 7px 12px; font-size: 12px;
@@ -347,7 +365,17 @@
     <fieldset>
       <legend>Image</legend>
       <div class="field">
-        <label for="image_url">Link to figure <span class="hint">page/figure number if no direct URL — file upload comes later</span></label>
+        <label>Screenshot of the figure <span class="hint">click the box, then paste (Ctrl+V / Cmd+V) — or click to browse a file. Max 5 MB.</span></label>
+        <div id="pasteBox" tabindex="0">
+          <span id="pasteBoxEmpty">Click here, then paste an image — or click to choose a file</span>
+          <img id="pastePreview" style="display:none;">
+        </div>
+        <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
+        <div id="pasteStatus" class="hint" style="display:block; margin-top:6px;"></div>
+        <button type="button" id="clearImageBtn" class="ghost" style="display:none; margin-top:8px; background:transparent; color:var(--danger); border:1px solid var(--line); text-transform:none; letter-spacing:0; padding:6px 12px; font-size:12px; border-radius:var(--radius); cursor:pointer;">Remove image</button>
+      </div>
+      <div class="field">
+        <label for="image_url">Or a link to the figure <span class="hint">if you'd rather not upload — page/figure number or a URL</span></label>
         <input type="text" id="image_url" placeholder="e.g. Fig. 3B, or a URL">
       </div>
       <div class="field">
@@ -496,6 +524,74 @@ document.getElementById('species_name').addEventListener('input', () => {
   document.getElementById('taxonomyLookupStatus').textContent = '';
 });
 
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB — matches the Supabase bucket's own limit
+let pastedImageBlob = null;
+
+const pasteBox = document.getElementById('pasteBox');
+const pasteBoxEmpty = document.getElementById('pasteBoxEmpty');
+const pastePreview = document.getElementById('pastePreview');
+const pasteStatus = document.getElementById('pasteStatus');
+const fileInput = document.getElementById('fileInput');
+const clearImageBtn = document.getElementById('clearImageBtn');
+
+function humanSize(bytes){
+  return (bytes / (1024*1024)).toFixed(1) + ' MB';
+}
+
+function acceptImageFile(file){
+  if (!file) return;
+  if (!file.type || !file.type.startsWith('image/')){
+    pasteStatus.textContent = 'That doesn\u2019t look like an image file.';
+    return;
+  }
+  if (file.size > MAX_IMAGE_BYTES){
+    pasteStatus.textContent = 'Too large (' + humanSize(file.size) + ') — 5 MB max. Try a tighter crop or a lower-resolution screenshot.';
+    return;
+  }
+  pastedImageBlob = file;
+  pastePreview.src = URL.createObjectURL(file);
+  pastePreview.style.display = 'block';
+  pasteBoxEmpty.style.display = 'none';
+  clearImageBtn.style.display = 'inline-block';
+  pasteStatus.textContent = 'Ready to upload (' + humanSize(file.size) + ') — attached when you submit.';
+}
+
+pasteBox.addEventListener('click', () => { if (!pastedImageBlob) fileInput.click(); });
+pasteBox.addEventListener('paste', (e) => {
+  const items = (e.clipboardData || window.clipboardData).items;
+  for (const item of items){
+    if (item.type.startsWith('image/')){
+      acceptImageFile(item.getAsFile());
+      e.preventDefault();
+      return;
+    }
+  }
+  pasteStatus.textContent = 'No image found on the clipboard.';
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files && fileInput.files[0]) acceptImageFile(fileInput.files[0]);
+});
+clearImageBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  pastedImageBlob = null;
+  pastePreview.src = '';
+  pastePreview.style.display = 'none';
+  pasteBoxEmpty.style.display = 'inline';
+  clearImageBtn.style.display = 'none';
+  pasteStatus.textContent = '';
+  fileInput.value = '';
+});
+
+function resetImageBox(){
+  pastedImageBlob = null;
+  pastePreview.src = '';
+  pastePreview.style.display = 'none';
+  pasteBoxEmpty.style.display = 'inline';
+  clearImageBtn.style.display = 'none';
+  pasteStatus.textContent = '';
+  fileInput.value = '';
+}
+
 const form = document.getElementById('form');
 const statusMsg = document.getElementById('statusMsg');
 const submitBtn = document.getElementById('submitBtn');
@@ -556,6 +652,24 @@ form.addEventListener('submit', async (e) => {
     return;
   }
 
+  if (pastedImageBlob){
+    setStatus('Uploading image…');
+    const ext = (pastedImageBlob.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
+    const path = 'submissions/' + Date.now() + '-' + Math.random().toString(36).slice(2,8) + '.' + ext;
+    const { error: uploadError } = await supabaseClient.storage
+      .from('pyrenoid-images')
+      .upload(path, pastedImageBlob, { contentType: pastedImageBlob.type });
+    if (uploadError){
+      setStatus('Image upload failed (' + uploadError.message + ') — try again or remove the image.', 'err');
+      submitBtn.disabled = false;
+      return;
+    }
+    record.image_path = path;
+  } else {
+    record.image_path = null;
+  }
+
+  setStatus('Submitting…');
   try {
     const { error } = await supabaseClient.from('submissions').insert([record]);
     if (error) throw error;
@@ -566,6 +680,7 @@ form.addEventListener('submit', async (e) => {
     document.getElementById('doiLookupStatus').textContent = '';
     taxonomyMeta = { kingdom: '', phylum: '', class_: '', order_rank: '', family: '', genus: '', gbif_key: null, match_type: '' };
     document.getElementById('taxonomyLookupStatus').textContent = '';
+    resetImageBox();
     thanksPanel.style.display = 'block';
   } catch(err){
     setStatus('Could not save this submission (' + (err.message || String(err)) + ')', 'err');
