@@ -239,7 +239,11 @@
       <div class="row">
         <div class="field">
           <label for="species_name">Species (binomial) <span class="req">*</span></label>
-          <input type="text" id="species_name" placeholder="e.g. Chlamydomonas reinhardtii" required>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="species_name" placeholder="e.g. Chlamydomonas reinhardtii" required style="flex:1;">
+            <button type="button" id="taxonomyLookupBtn" class="ghost" style="background:transparent; color:var(--moss-deep); border:1px solid var(--line); text-transform:none; letter-spacing:0; padding:9px 14px; font-size:12.5px; border-radius:var(--radius); cursor:pointer; white-space:nowrap;">Match</button>
+          </div>
+          <div id="taxonomyLookupStatus" style="font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ink-soft); margin-top:6px;"></div>
         </div>
         <div class="field">
           <label for="strain">Strain / isolate <span class="hint">if reported</span></label>
@@ -448,6 +452,50 @@ document.getElementById('doi').addEventListener('input', () => {
   document.getElementById('doiLookupStatus').textContent = '';
 });
 
+let taxonomyMeta = { kingdom: '', phylum: '', class_: '', order_rank: '', family: '', genus: '', gbif_key: null, match_type: '' };
+
+async function matchTaxonomy(){
+  const taxStatus = document.getElementById('taxonomyLookupStatus');
+  const name = fieldVal('species_name');
+  if (!name){
+    taxStatus.textContent = 'Enter a species name first.';
+    return;
+  }
+  taxStatus.textContent = 'Matching…';
+  try {
+    const res = await fetch('https://api.gbif.org/v1/species/match?name=' + encodeURIComponent(name));
+    if (!res.ok) throw new Error('GBIF request failed (' + res.status + ')');
+    const data = await res.json();
+    if (!data.matchType || data.matchType === 'NONE'){
+      taxonomyMeta = { kingdom: '', phylum: '', class_: '', order_rank: '', family: '', genus: '', gbif_key: null, match_type: 'NONE' };
+      taxStatus.textContent = 'No match found in GBIF — check the spelling, or leave for a curator to resolve.';
+      return;
+    }
+    taxonomyMeta = {
+      kingdom: data.kingdom || '',
+      phylum: data.phylum || '',
+      class_: data.class || '',
+      order_rank: data.order || '',
+      family: data.family || '',
+      genus: data.genus || '',
+      gbif_key: data.usageKey || null,
+      match_type: data.matchType || ''
+    };
+    const rankSummary = [taxonomyMeta.phylum, taxonomyMeta.class_, taxonomyMeta.family].filter(Boolean).join(' \u203a ');
+    const flag = data.matchType === 'EXACT' ? '' : '  (⚠ ' + data.matchType + ' match — worth a curator check)';
+    taxStatus.textContent = 'Matched: ' + rankSummary + flag;
+  } catch(err){
+    taxonomyMeta = { kingdom: '', phylum: '', class_: '', order_rank: '', family: '', genus: '', gbif_key: null, match_type: '' };
+    taxStatus.textContent = 'Could not reach GBIF — a curator can match this manually.';
+  }
+}
+
+document.getElementById('taxonomyLookupBtn').addEventListener('click', matchTaxonomy);
+document.getElementById('species_name').addEventListener('input', () => {
+  taxonomyMeta = { kingdom: '', phylum: '', class_: '', order_rank: '', family: '', genus: '', gbif_key: null, match_type: '' };
+  document.getElementById('taxonomyLookupStatus').textContent = '';
+});
+
 const form = document.getElementById('form');
 const statusMsg = document.getElementById('statusMsg');
 const submitBtn = document.getElementById('submitBtn');
@@ -491,7 +539,15 @@ form.addEventListener('submit', async (e) => {
     reference_title: referenceMeta.title || null,
     reference_authors: referenceMeta.authors || null,
     reference_year: referenceMeta.year || null,
-    reference_journal: referenceMeta.journal || null
+    reference_journal: referenceMeta.journal || null,
+    kingdom: taxonomyMeta.kingdom || null,
+    phylum: taxonomyMeta.phylum || null,
+    class: taxonomyMeta.class_ || null,
+    order_rank: taxonomyMeta.order_rank || null,
+    family: taxonomyMeta.family || null,
+    genus: taxonomyMeta.genus || null,
+    gbif_key: taxonomyMeta.gbif_key || null,
+    taxonomy_match_type: taxonomyMeta.match_type || null
   };
 
   if (!record.species_name || !record.reference_citation || !record.presence_call || !record.submitter_email){
@@ -508,6 +564,8 @@ form.addEventListener('submit', async (e) => {
     chips.forEach(c => c.classList.remove('active'));
     referenceMeta = { title: '', authors: '', year: null, journal: '' };
     document.getElementById('doiLookupStatus').textContent = '';
+    taxonomyMeta = { kingdom: '', phylum: '', class_: '', order_rank: '', family: '', genus: '', gbif_key: null, match_type: '' };
+    document.getElementById('taxonomyLookupStatus').textContent = '';
     thanksPanel.style.display = 'block';
   } catch(err){
     setStatus('Could not save this submission (' + (err.message || String(err)) + ')', 'err');
