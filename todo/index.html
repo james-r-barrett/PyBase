@@ -101,8 +101,30 @@
     padding: 9px 16px; border-radius: var(--radius); white-space:nowrap; align-self:center;
   }
   .item-action:hover{ background: var(--moss); }
+  .item-actions{ display:flex; flex-direction:column; gap:8px; align-items:stretch; }
+  .item-flag{
+    background: transparent; color: var(--ink-soft); border: 1px solid var(--line);
+    font-family:'IBM Plex Mono', monospace; font-size: 11.5px; text-transform:uppercase; letter-spacing:0.03em;
+    padding: 7px 14px; border-radius: var(--radius); white-space:nowrap; cursor:pointer;
+  }
+  .item-flag:hover{ background: var(--paper); color: var(--danger); border-color: var(--danger); }
 
   .empty{ font-family:'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--ink-soft); padding: 30px 0; text-align:center; }
+
+  .tab-btn{
+    font-family:'IBM Plex Mono', monospace; font-size: 12.5px; text-transform:uppercase; letter-spacing:0.03em;
+    background: var(--paper-raised); color: var(--ink-soft); border: 1px solid var(--line);
+    border-radius: 20px; padding: 8px 16px; cursor:pointer;
+  }
+  .tab-btn.active{ background: var(--moss-deep); color: #fff; border-color: var(--moss-deep); }
+  .tab-btn:hover:not(.active){ border-color: var(--moss); color: var(--moss-deep); }
+
+  .item-restore{
+    background: transparent; color: var(--moss-deep); border: 1px solid var(--line);
+    font-family:'IBM Plex Mono', monospace; font-size: 11.5px; text-transform:uppercase; letter-spacing:0.03em;
+    padding: 7px 14px; border-radius: var(--radius); white-space:nowrap; cursor:pointer;
+  }
+  .item-restore:hover{ background: var(--paper); border-color: var(--moss); }
   footer{ margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); }
 </style>
 </head>
@@ -114,6 +136,7 @@
     <a href="../submit/">Submit</a>
     <a href="../browse/">Browse</a>
     <a href="../todo/" class="active">To-do</a>
+    <a href="../guide/">Guide</a>
   </nav>
 
   <header>
@@ -127,10 +150,16 @@
       Pyrenoid Evolution Database — To-do
     </div>
     <h1>Papers still to review</h1>
-    <p class="sub">Candidate references — some found automatically, some seeded manually — that don't have a record logged yet. Pick one, read it, and log what you find. Items disappear from this list automatically once a matching submission comes in.</p>
+    <p class="sub">Candidate references — some found automatically, some seeded manually. Nothing here is deleted — flagged and completed items stay browsable in their own tabs.</p>
   </header>
 
-  <div class="controls" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-top:20px;">
+  <div class="tabs" style="display:flex; gap:8px; margin-top:24px; flex-wrap:wrap;">
+    <button type="button" class="tab-btn active" data-status="to_review">To-do</button>
+    <button type="button" class="tab-btn" data-status="not_relevant">Flagged</button>
+    <button type="button" class="tab-btn" data-status="covered">Completed</button>
+  </div>
+
+  <div class="controls" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-top:16px;">
     <div id="resultMeta" style="margin:0;"></div>
     <select id="sortSelect" style="font-family:'IBM Plex Mono', monospace; font-size:12.5px; padding:8px 10px; border:1px solid var(--line); border-radius:var(--radius); background:var(--surface); color:var(--ink);">
       <option value="year_asc">Publication year — oldest first</option>
@@ -166,11 +195,10 @@ function escapeHtml(str){
 }
 
 let allItems = [];
+let currentStatus = 'to_review';
 
 function sortItems(items, mode){
   const sorted = [...items];
-  // Items with no pub_year sort to the end regardless of direction —
-  // most of the pre-year-tracking backlog will have this until re-scanned.
   const byYear = (a, b) => {
     if (a.pub_year == null && b.pub_year == null) return 0;
     if (a.pub_year == null) return 1;
@@ -180,17 +208,40 @@ function sortItems(items, mode){
   if (mode === 'year_asc') sorted.sort(byYear);
   else if (mode === 'year_desc') sorted.sort((a, b) => byYear(b, a));
   else if (mode === 'added_desc') sorted.sort((a, b) => (b.added_at || '').localeCompare(a.added_at || ''));
-  else sorted.sort((a, b) => (a.added_at || '').localeCompare(b.added_at || '')); // added_asc, default
+  else sorted.sort((a, b) => (a.added_at || '').localeCompare(b.added_at || ''));
   return sorted;
+}
+
+const STATUS_LABELS = {
+  to_review: { noun: 'paper still to review', plural: 'papers still to review', empty: 'Nothing outstanding right now — check back later.' },
+  not_relevant: { noun: 'flagged item', plural: 'flagged items', empty: 'Nothing has been flagged as not relevant.' },
+  covered: { noun: 'completed item', plural: 'completed items', empty: 'Nothing marked complete yet.' },
+};
+
+function updateTabCounts(){
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    const status = btn.getAttribute('data-status');
+    const count = allItems.filter(i => i.status === status).length;
+    const label = { to_review: 'To-do', not_relevant: 'Flagged', covered: 'Completed' }[status];
+    btn.textContent = `${label} (${count})`;
+  });
+}
+
+function renderCurrentTab(){
+  const filtered = allItems.filter(i => i.status === currentStatus);
+  const sorted = sortItems(filtered, document.getElementById('sortSelect').value);
+  renderItems(sorted);
+  updateTabCounts();
 }
 
 function renderItems(items){
   const resultsEl = document.getElementById('results');
   const metaEl = document.getElementById('resultMeta');
-  metaEl.textContent = items.length + (items.length === 1 ? ' paper still to review' : ' papers still to review');
+  const labels = STATUS_LABELS[currentStatus];
+  metaEl.textContent = items.length + ' ' + (items.length === 1 ? labels.noun : labels.plural);
 
   if (items.length === 0){
-    resultsEl.innerHTML = '<div class="empty">Nothing outstanding right now — check back later.</div>';
+    resultsEl.innerHTML = '<div class="empty">' + escapeHtml(labels.empty) + '</div>';
     return;
   }
 
@@ -199,13 +250,28 @@ function renderItems(items){
     const doiLink = bareDoi ? '<a href="https://doi.org/' + encodeURIComponent(bareDoi) + '" target="_blank" rel="noopener">' + escapeHtml(item.citation) + '</a>' : escapeHtml(item.citation);
     const submitHref = bareDoi ? '../submit/?doi=' + encodeURIComponent(bareDoi) : '../submit/';
     const yearBadge = item.pub_year ? '<span style="font-family:\'IBM Plex Mono\', monospace; font-size:11px; color:var(--ink-soft); margin-right:8px;">' + item.pub_year + '</span>' : '';
+
+    let actions = '';
+    if (item.status === 'to_review'){
+      actions = `
+        <a class="item-action" href="${submitHref}">Log this one</a>
+        <button type="button" class="item-flag" data-flag-id="${escapeHtml(item.id)}">Not relevant</button>
+      `;
+    } else if (item.status === 'not_relevant'){
+      actions = `
+        <a class="item-action" href="${submitHref}">Log this one</a>
+        <button type="button" class="item-restore" data-restore-id="${escapeHtml(item.id)}">Restore to to-do</button>
+      `;
+    }
+    // 'covered' items get no action buttons — they're done.
+
     return `
-      <div class="item">
+      <div class="item" data-id="${escapeHtml(item.id)}">
         <div class="item-body">
           <div class="item-citation">${yearBadge}${doiLink}</div>
           ${item.notes ? '<div class="item-notes">' + escapeHtml(item.notes) + '</div>' : ''}
         </div>
-        <a class="item-action" href="${submitHref}">Log this one</a>
+        ${actions ? '<div class="item-actions">' + actions + '</div>' : ''}
       </div>
     `;
   }).join('');
@@ -219,21 +285,68 @@ async function loadQueue(){
     let from = 0;
     const pageSize = 1000;
     while (true){
-      const { data, error } = await supabaseClient.from('literature_todo').select('*').range(from, from + pageSize - 1);
+      const { data, error } = await supabaseClient.from('literature_status').select('*').range(from, from + pageSize - 1);
       if (error) throw error;
       items = items.concat(data || []);
-      if (!data || data.length < pageSize) break; // last page reached
+      if (!data || data.length < pageSize) break;
       from += pageSize;
     }
     allItems = items;
-    renderItems(sortItems(allItems, document.getElementById('sortSelect').value));
+    renderCurrentTab();
   } catch(err){
     resultsEl.innerHTML = '<div class="empty">Could not load the list (' + escapeHtml(err.message || String(err)) + ').</div>';
   }
 }
 
-document.getElementById('sortSelect').addEventListener('change', () => {
-  renderItems(sortItems(allItems, document.getElementById('sortSelect').value));
+document.getElementById('sortSelect').addEventListener('change', renderCurrentTab);
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentStatus = btn.getAttribute('data-status');
+    renderCurrentTab();
+  });
+});
+
+document.getElementById('results').addEventListener('click', async (e) => {
+  const flagBtn = e.target.closest('.item-flag');
+  const restoreBtn = e.target.closest('.item-restore');
+
+  if (flagBtn){
+    const id = flagBtn.getAttribute('data-flag-id');
+    if (!confirm('Mark this reference as not relevant? It moves to the Flagged tab — nothing is deleted.')) return;
+    flagBtn.disabled = true;
+    flagBtn.textContent = 'Flagging…';
+    try {
+      const { error } = await supabaseClient.rpc('mark_literature_not_relevant', { item_id: id });
+      if (error) throw error;
+      const item = allItems.find(i => i.id === id);
+      if (item) item.status = 'not_relevant';
+      renderCurrentTab();
+    } catch(err){
+      flagBtn.disabled = false;
+      flagBtn.textContent = 'Not relevant';
+      alert('Could not flag this item: ' + (err.message || String(err)));
+    }
+  }
+
+  if (restoreBtn){
+    const id = restoreBtn.getAttribute('data-restore-id');
+    restoreBtn.disabled = true;
+    restoreBtn.textContent = 'Restoring…';
+    try {
+      const { error } = await supabaseClient.rpc('mark_literature_to_review', { item_id: id });
+      if (error) throw error;
+      const item = allItems.find(i => i.id === id);
+      if (item) item.status = 'to_review';
+      renderCurrentTab();
+    } catch(err){
+      restoreBtn.disabled = false;
+      restoreBtn.textContent = 'Restore to to-do';
+      alert('Could not restore this item: ' + (err.message || String(err)));
+    }
+  }
 });
 
 loadQueue();

@@ -72,7 +72,6 @@
   .sub{
     color: var(--ink-soft);
     font-size: 15.5px;
-    max-width: 56ch;
   }
   .mark{ width: 34px; height: 34px; flex-shrink:0; }
 
@@ -107,8 +106,10 @@
   label{
     display:block;
     font-size: 13px;
+    line-height: 1.35;
     color: var(--ink-soft);
     margin-bottom: 5px;
+    min-height: 2.7em;
   }
   label .hint{
     font-family: 'IBM Plex Mono', monospace;
@@ -117,8 +118,9 @@
     margin-left: 6px;
   }
   label .req{ color: var(--danger); }
-  input[type=text], input[type=email], input[type=url], select, textarea{
+  input[type=text], input[type=email], input[type=url], input[type=number], select, textarea{
     width: 100%;
+    box-sizing: border-box;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 13.5px;
     color: var(--ink);
@@ -252,6 +254,7 @@
     <a href="../submit/" class="active">Submit</a>
     <a href="../browse/">Browse</a>
     <a href="../todo/">To-do</a>
+    <a href="../guide/">Guide</a>
   </nav>
 
   <header style="position:relative;">
@@ -266,6 +269,7 @@
     </div>
     <h1>Submit a pyrenoid record</h1>
     <p class="sub">Log a species-level observation from the literature: presence or absence of a pyrenoid, ultrastructural detail where reported, and the source it comes from. Submissions are reviewed before they enter the curated dataset.</p>
+    <p class="sub" style="background:var(--paper-raised); border:1px dashed var(--line); border-radius:var(--radius); padding:12px 16px; margin-top:14px;"><b>Classify what the image actually shows, not what you'd expect from the species.</b> Imaging artefacts, growth-condition effects, and mis-speciation in older literature are real, but should be corrected post-hoc rather than guessed around at entry time.</p>
   </header>
 
   <form class="card" id="form">
@@ -299,6 +303,35 @@
           <label for="strain">Strain / isolate <span class="hint">if reported</span></label>
           <input type="text" id="strain" placeholder="e.g. CC-1690">
         </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Chloroplast morphology</legend>
+      <div class="row">
+        <div class="field">
+          <label for="chloroplast_morphology">Chloroplast shape</label>
+          <select id="chloroplast_morphology">
+            <option value="">Not reported</option>
+            <option value="discoid">Discoid / lens-shaped</option>
+            <option value="cup_shaped">Cup-shaped</option>
+            <option value="reticulate">Reticulate (fenestrated)</option>
+            <option value="ring_shaped">Ring-shaped</option>
+            <option value="ribbon_helical">Ribbon-shaped (helical)</option>
+            <option value="cuboid">Cuboid (axial plate)</option>
+            <option value="stellate">Star-shaped (stellate)</option>
+            <option value="two_lobed">Two-lobed (butterfly)</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="pyrenoids_per_chloroplast">Pyrenoids per chloroplast</label>
+          <input type="number" id="pyrenoids_per_chloroplast" min="0" step="1" placeholder="e.g. 1">
+        </div>
+      </div>
+      <div class="field">
+        <label for="cell_type_context">Cell type <span class="hint">only if pyrenoid presence/form is cell-type specific — e.g. "gametes only"</span></label>
+        <input type="text" id="cell_type_context" placeholder="Leave blank unless relevant">
       </div>
     </fieldset>
 
@@ -357,8 +390,8 @@
           <select id="pyrenoid_class">
             <option value="">Not reported</option>
             <option value="central">Central</option>
-            <option value="stalked">Stalked</option>
-            <option value="peripheral">Peripheral</option>
+            <option value="stalked">Stalked <span style="font-weight:400;">(narrow constriction at the chloroplast)</span></option>
+            <option value="bulged">Bulged <span style="font-weight:400;">(wide-based, no constriction)</span></option>
             <option value="other">Other</option>
           </select>
         </div>
@@ -367,10 +400,62 @@
           <input type="text" id="pyrenoid_class_other" placeholder="e.g. reticulate">
         </div>
       </div>
+      <div class="row" id="positionWrap" style="display:none;">
+        <div class="field">
+          <label for="position_type">Position on the chloroplast</label>
+          <select id="position_type">
+            <option value="">Not reported</option>
+            <option value="apical">Apical (end of the chloroplast)</option>
+            <option value="lateral">Lateral (side of the chloroplast)</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Matrix shape</legend>
+      <div class="row">
+        <div class="field">
+          <label for="matrix_shape">Shape</label>
+          <select id="matrix_shape">
+            <option value="">Not reported</option>
+            <option value="spherical">Spherical / pseudo-spherical</option>
+            <option value="lenticular">Lenticular</option>
+            <option value="lobed">Lobed <span style="font-weight:400;">(one matrix, multiple rounded lobes)</span></option>
+            <option value="multinucleate">Multinucleate <span style="font-weight:400;">(fragmented by traversing thylakoids)</span></option>
+            <option value="amorphous">Amorphous</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="matrix_diameter_um">Matrix diameter <span class="hint">µm, estimated from the image if possible</span></label>
+          <input type="number" id="matrix_diameter_um" min="0" step="0.1" placeholder="e.g. 2.5">
+        </div>
+      </div>
     </fieldset>
 
     <fieldset>
       <legend>Ultrastructure <span class="hint" style="text-transform:none; letter-spacing:0;">(leave blank if not reported)</span></legend>
+
+      <div class="row">
+        <div class="field">
+          <label for="thylakoid_appression_present">Adjacent/appressed thylakoids present? <span class="hint">"naked" = no</span></label>
+          <select id="thylakoid_appression_present">
+            <option value="">Not reported</option>
+            <option value="yes">Yes</option>
+            <option value="no">No (naked)</option>
+            <option value="unclear">Unclear</option>
+          </select>
+        </div>
+        <div class="field" id="thylakoidAppressionTypeWrap" style="display:none;">
+          <label for="thylakoid_appression_type">Type</label>
+          <select id="thylakoid_appression_type">
+            <option value="">Not reported</option>
+            <option value="appressed">Appressed</option>
+            <option value="adjacent_not_appressed">Adjacent, not appressed <span style="font-weight:400;">(e.g. Porphyridium-type)</span></option>
+          </select>
+        </div>
+      </div>
 
       <div class="row">
         <div class="field">
@@ -385,6 +470,16 @@
       </div>
       <div class="row" id="traversingMembraneDetail" style="display:none;">
         <div class="field">
+          <label for="membrane_type">Type</label>
+          <select id="membrane_type">
+            <option value="">Not reported</option>
+            <option value="sheet">Sheets</option>
+            <option value="tubulated">Tubulated <span style="font-weight:400;">(appears fenestrated in 2D section)</span></option>
+            <option value="curved">Curved <span style="font-weight:400;">(e.g. Porphyridium)</span></option>
+            <option value="invaginated">Invaginated</option>
+          </select>
+        </div>
+        <div class="field" id="continuousWithThylakoidsWrap" style="display:none;">
           <label for="continuous_with_thylakoids">Continuous with external thylakoids?</label>
           <select id="continuous_with_thylakoids">
             <option value="">Not reported</option>
@@ -393,36 +488,39 @@
             <option value="unclear">Unclear</option>
           </select>
         </div>
+      </div>
+      <div class="row" id="traversalExtentDetail" style="display:none;">
         <div class="field">
-          <label for="membrane_type">Type</label>
-          <select id="membrane_type">
+          <label for="traversal_extent">Extent</label>
+          <select id="traversal_extent">
             <option value="">Not reported</option>
-            <option value="sheet">Sheet</option>
-            <option value="fenestrated">Fenestrated</option>
-            <option value="curved">Curved</option>
-            <option value="invaginated">Invaginated</option>
+            <option value="complete">Complete <span style="font-weight:400;">(spans the whole matrix)</span></option>
+            <option value="partial">Partial <span style="font-weight:400;">(enters from the edge, doesn't reach the other side)</span></option>
+            <option value="discontinuous">Discontinuous</option>
+            <option value="unclear">Unclear</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="traversal_count">Number of traversions</label>
+          <select id="traversal_count">
+            <option value="">Not reported</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="many">Many</option>
+            <option value="unclear">Unclear</option>
           </select>
         </div>
       </div>
 
       <div class="row">
         <div class="field">
-          <label for="diffusion_barrier">Diffusion barrier</label>
-          <select id="diffusion_barrier">
+          <label for="carbohydrate_present">Carbohydrate barrier present? <span class="hint">starch — also called capping vesicle / pyrenoid sac / pyrenoid cap in older TEMs</span></label>
+          <select id="carbohydrate_present">
             <option value="">Not reported</option>
-            <option value="present">Present</option>
-            <option value="absent">Absent</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
             <option value="unclear">Unclear</option>
-          </select>
-        </div>
-        <div class="field" id="diffusionBarrierTypeWrap" style="display:none;">
-          <label for="diffusion_barrier_type">Barrier type</label>
-          <select id="diffusion_barrier_type">
-            <option value="">Not reported</option>
-            <option value="carbohydrate">Carbohydrate (e.g. starch)</option>
-            <option value="membrane">Membrane</option>
-            <option value="shell">Shell</option>
-            <option value="other">Other</option>
           </select>
         </div>
       </div>
@@ -436,13 +534,55 @@
           </select>
         </div>
         <div class="field">
-          <label for="starch_count">Number of layers</label>
+          <label for="starch_count">Number of granules / plates</label>
           <select id="starch_count">
             <option value="">Not reported</option>
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
             <option value="4_plus">4+</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" id="carbohydrateDetail2" style="display:none;">
+        <div class="field">
+          <label for="starch_appearance">Appearance</label>
+          <select id="starch_appearance">
+            <option value="">Not reported</option>
+            <option value="light">Light (staining-dependent)</option>
+            <option value="dark">Dark (staining-dependent)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="starch_coverage">Coverage of matrix surface</label>
+          <select id="starch_coverage">
+            <option value="">Not reported</option>
+            <option value="complete">Complete</option>
+            <option value="partial">Partial <span style="font-weight:400;">(e.g. capping vesicle — can't fully encase an extra-chloroplastic matrix)</span></option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="shell_present">Shell present? <span class="hint">thin protein layer — often hard to observe</span></label>
+          <select id="shell_present">
+            <option value="">Not reported</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+            <option value="unclear">Unclear</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="membrane_barrier_present">Membrane barrier present?</label>
+          <select id="membrane_barrier_present">
+            <option value="">Not reported</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+            <option value="unclear">Unclear</option>
           </select>
         </div>
       </div>
@@ -725,25 +865,38 @@ document.getElementById('reference_citation').addEventListener('blur', checkForD
 
 document.getElementById('pyrenoid_class').addEventListener('change', (e) => {
   document.getElementById('pyrenoidClassOtherWrap').style.display = (e.target.value === 'other') ? '' : 'none';
+  document.getElementById('positionWrap').style.display = (e.target.value === 'stalked' || e.target.value === 'bulged') ? '' : 'none';
 });
 
 document.getElementById('traversing_membranes').addEventListener('change', (e) => {
-  document.getElementById('traversingMembraneDetail').style.display = (e.target.value === 'present') ? '' : 'none';
-});
-
-document.getElementById('diffusion_barrier').addEventListener('change', (e) => {
   const show = e.target.value === 'present';
-  document.getElementById('diffusionBarrierTypeWrap').style.display = show ? '' : 'none';
+  document.getElementById('traversingMembraneDetail').style.display = show ? '' : 'none';
+  document.getElementById('traversalExtentDetail').style.display = show ? '' : 'none';
   if (!show){
-    document.getElementById('diffusion_barrier_type').value = '';
-    document.getElementById('carbohydrateDetail').style.display = 'none';
-    document.getElementById('membraneBarrierDetail').style.display = 'none';
+    document.getElementById('membrane_type').value = '';
+    document.getElementById('continuousWithThylakoidsWrap').style.display = 'none';
   }
 });
 
-document.getElementById('diffusion_barrier_type').addEventListener('change', (e) => {
-  document.getElementById('carbohydrateDetail').style.display = (e.target.value === 'carbohydrate') ? '' : 'none';
-  document.getElementById('membraneBarrierDetail').style.display = (e.target.value === 'membrane') ? '' : 'none';
+document.getElementById('membrane_type').addEventListener('change', (e) => {
+  // Continuity with external thylakoids only makes sense for sheets, tubulated, or curved —
+  // not for invaginations, which by definition aren't continuous with the thylakoid network.
+  const askContinuity = ['sheet', 'tubulated', 'curved'].includes(e.target.value);
+  document.getElementById('continuousWithThylakoidsWrap').style.display = askContinuity ? '' : 'none';
+});
+
+document.getElementById('thylakoid_appression_present').addEventListener('change', (e) => {
+  document.getElementById('thylakoidAppressionTypeWrap').style.display = (e.target.value === 'yes') ? '' : 'none';
+});
+
+document.getElementById('carbohydrate_present').addEventListener('change', (e) => {
+  const show = e.target.value === 'yes';
+  document.getElementById('carbohydrateDetail').style.display = show ? '' : 'none';
+  document.getElementById('carbohydrateDetail2').style.display = show ? '' : 'none';
+});
+
+document.getElementById('membrane_barrier_present').addEventListener('change', (e) => {
+  document.getElementById('membraneBarrierDetail').style.display = (e.target.value === 'yes') ? '' : 'none';
 });
 
 document.getElementById('plastoglobuli').addEventListener('change', (e) => {
@@ -854,15 +1007,28 @@ form.addEventListener('submit', async (e) => {
     doi: fieldVal('doi'),
     presence_call: fieldVal('presence_call'),
     method: fieldVal('method'),
+    chloroplast_morphology: fieldVal('chloroplast_morphology'),
+    pyrenoids_per_chloroplast: fieldVal('pyrenoids_per_chloroplast') || null,
+    cell_type_context: fieldVal('cell_type_context'),
     pyrenoid_class: fieldVal('pyrenoid_class'),
     pyrenoid_class_other: fieldVal('pyrenoid_class_other'),
+    position_type: fieldVal('position_type'),
+    matrix_shape: fieldVal('matrix_shape'),
+    matrix_diameter_um: fieldVal('matrix_diameter_um') || null,
+    thylakoid_appression_present: fieldVal('thylakoid_appression_present'),
+    thylakoid_appression_type: fieldVal('thylakoid_appression_type'),
     traversing_membranes: fieldVal('traversing_membranes'),
     continuous_with_thylakoids: fieldVal('continuous_with_thylakoids'),
     membrane_type: fieldVal('membrane_type'),
-    diffusion_barrier: fieldVal('diffusion_barrier'),
-    diffusion_barrier_type: fieldVal('diffusion_barrier_type'),
+    traversal_extent: fieldVal('traversal_extent'),
+    traversal_count: fieldVal('traversal_count'),
+    carbohydrate_present: fieldVal('carbohydrate_present'),
     starch_location: fieldVal('starch_location'),
     starch_count: fieldVal('starch_count'),
+    starch_appearance: fieldVal('starch_appearance'),
+    starch_coverage: fieldVal('starch_coverage'),
+    shell_present: fieldVal('shell_present'),
+    membrane_barrier_present: fieldVal('membrane_barrier_present'),
     barrier_membrane_subtype: fieldVal('barrier_membrane_subtype'),
     barrier_membrane_morphology: fieldVal('barrier_membrane_morphology'),
     plastoglobuli: fieldVal('plastoglobuli'),
