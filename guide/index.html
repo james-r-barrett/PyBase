@@ -23,7 +23,7 @@
     margin:0; background: var(--paper); color: var(--ink); font-family: 'Source Serif 4', serif;
     padding: 48px 20px 80px; line-height: 1.5; transition: background 0.15s, color 0.15s;
   }
-  .wrap{ max-width: 900px; margin: 0 auto; }
+  .wrap{ max-width: 920px; margin: 0 auto; }
 
   .sitenav{
     display:flex; gap:18px; margin-bottom:28px;
@@ -48,48 +48,48 @@
     font-family: 'Fraunces', serif; font-weight: 600; font-size: 32px; margin: 0 0 8px;
     color: var(--moss-deep); letter-spacing: -0.01em;
   }
-  .sub{ color: var(--ink-soft); font-size: 15px; max-width: 66ch; }
+  .sub{ color: var(--ink-soft); font-size: 15px; }
 
   .disclaimer{
     background: var(--paper-raised); border: 1px dashed var(--line); border-radius: var(--radius);
-    padding: 14px 18px; margin: 24px 0 40px; font-size: 13.5px; color: var(--ink-soft);
+    padding: 14px 18px; margin: 24px 0 12px; font-size: 13.5px; color: var(--ink-soft);
   }
   .disclaimer b{ color: var(--ink); }
 
-  section{ margin-bottom: 48px; }
+  .toc{
+    display:flex; flex-wrap:wrap; gap: 8px 14px; margin: 20px 0 40px; padding: 14px 18px;
+    background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius);
+    font-family:'IBM Plex Mono', monospace; font-size: 12px;
+  }
+  .toc a{ color: var(--moss-deep); text-decoration:none; }
+  .toc a:hover{ text-decoration:underline; }
+  .toc span{ color: var(--line); }
+
+  section{ margin-bottom: 52px; }
   .section-head{
     display:flex; align-items:baseline; gap:12px; margin-bottom: 6px;
     border-bottom: 1px solid var(--line); padding-bottom: 10px;
   }
-  .section-num{
-    font-family:'IBM Plex Mono', monospace; font-size: 12px; color: var(--ochre);
-  }
-  h2{
-    font-family:'Fraunces', serif; font-weight:600; font-size: 22px; color: var(--moss-deep); margin: 0;
-  }
-  .section-note{ color: var(--ink-soft); font-size: 14px; margin: 8px 0 22px; max-width: 68ch; }
+  .section-num{ font-family:'IBM Plex Mono', monospace; font-size: 12px; color: var(--ochre); }
+  h2{ font-family:'Fraunces', serif; font-weight:600; font-size: 22px; color: var(--moss-deep); margin: 0; }
+  h3{ font-family:'Fraunces', serif; font-weight:600; font-size: 17px; color: var(--ink); margin: 30px 0 6px; }
+  .section-note{ color: var(--ink-soft); font-size: 14px; margin: 8px 0 22px; max-width: 72ch; }
 
-  .card-grid{
-    display:grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px;
-  }
+  .card-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
   .example-card{
-    background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 16px;
+    background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px;
   }
   .example-card svg{ width:100%; height:auto; display:block; margin-bottom: 10px; }
-  .example-title{
-    font-family:'Fraunces', serif; font-weight:600; font-size: 15.5px; color: var(--ink); margin-bottom: 4px;
-  }
-  .example-desc{ font-size: 13px; color: var(--ink-soft); line-height:1.45; }
+  .example-title{ font-family:'Fraunces', serif; font-weight:600; font-size: 15px; color: var(--ink); margin-bottom: 4px; }
+  .example-desc{ font-size: 12.5px; color: var(--ink-soft); line-height:1.45; }
 
   .subnote{
     font-size: 13.5px; color: var(--ink-soft); margin-top: 18px; padding-top:14px; border-top: 1px dashed var(--line);
   }
   .subnote b{ color: var(--ink); }
+  .subnote + .subnote{ border-top: none; padding-top: 4px; margin-top: 8px; }
 
-  .further{
-    font-family:'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--ink-soft); margin-top: 22px;
-  }
+  .further{ font-family:'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--ink-soft); margin-top: 22px; }
   .further a{ color: var(--moss-deep); }
 
   footer{ margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); }
@@ -117,20 +117,102 @@
       Pyrenoid Evolution Database — Classification Guide
     </div>
     <h1>How to classify what you see</h1>
-    <p class="sub">A visual key for the categories used in the submission form — read this alongside a paper's figures to standardise how different people call the same features. Organised in the same order as the form.</p>
+    <p class="sub">A visual key for every category on the submission form, in the same order it appears there — read alongside a paper's figures to standardise how different people call the same features.</p>
   </header>
 
   <div class="disclaimer">
-    <b>Draft guide, not a finished standard.</b> These are original schematic diagrams — not reproductions of any published figure — meant to illustrate the general idea of each category, not a real specimen. Descriptions here are a starting point and may not match how every paper in the field uses these terms; check with a curator before treating a borderline call as settled.
+    <b>Classify what the image actually shows, not what you'd expect from the species.</b> Imaging artefacts, growth-condition effects, and mis-speciation in older literature are real, but should be corrected post-hoc rather than guessed around at entry time. The diagrams below are original schematics, not reproductions of any published figure — illustrative, not a real specimen. This is a working draft: expect it to keep changing as edge cases turn up.
   </div>
 
-  <!-- ============ SECTION 1: GENERAL CLASS ============ -->
-  <section id="general-class">
-    <div class="section-head">
-      <span class="section-num">01</span>
-      <h2>General class</h2>
+  <div class="toc">
+    <a href="#chloroplast">01 Chloroplast morphology</a><span>·</span>
+    <a href="#general-class">02 General class</a><span>·</span>
+    <a href="#matrix-shape">03 Matrix shape</a><span>·</span>
+    <a href="#appression">04 Thylakoid appression</a><span>·</span>
+    <a href="#traversing">05 Traversing membranes</a><span>·</span>
+    <a href="#barrier">06 Diffusion barrier</a><span>·</span>
+    <a href="#plastoglobuli">07 Plastoglobuli</a>
+  </div>
+
+  <!-- ============ 01: CHLOROPLAST MORPHOLOGY ============ -->
+  <section id="chloroplast">
+    <div class="section-head"><span class="section-num">01</span><h2>Chloroplast morphology</h2></div>
+    <p class="section-note">The shape of the chloroplast itself, independent of the pyrenoid — worth calling before anything pyrenoid-specific, since it sets context for what "central" or "bulged" even means in that cell.</p>
+
+    <div class="card-grid">
+      <div class="example-card">
+        <svg viewBox="0 0 140 120"><ellipse cx="70" cy="60" rx="48" ry="22" fill="none" stroke="var(--moss)" stroke-width="2.5"/></svg>
+        <div class="example-title">Discoid / lens-shaped</div>
+        <div class="example-desc">Flattened, disc-like — as in most Rhodophyta.</div>
+      </div>
+      <div class="example-card">
+        <svg viewBox="0 0 148 176" xmlns="http://www.w3.org/2000/svg" style="stroke-linecap:round;stroke-linejoin:round;">
+          <g transform="matrix(1,0,0,1,-894.543,-981.532)">
+            <path d="M961.372,1013.3C961.372,1013.3 970.39,1038.58 963.724,1054.47C957.058,1070.36 955.095,1090.48 967.537,1101.2C979.979,1111.92 987.133,1113.07 997.83,1110.77C1008.53,1108.47 1016.81,1101.78 1020.84,1092.52C1024.87,1083.26 1024.41,1072.7 1025.16,1063.88C1025.55,1059.36 1025.02,1053.2 1024.79,1050.93C1024.56,1048.73 1022.21,1035.88 1021.92,1029C1021.62,1022.12 1019.94,1013.02 1026.09,1011.47C1030.96,1010.25 1031.91,1009.09 1040.75,1019.46C1049.58,1029.83 1069.03,1083 1051.83,1122.8C1034.63,1162.6 1017.85,1168.23 1003.94,1172.99C990.021,1177.75 967.19,1174.13 954.334,1161.21C941.478,1148.29 929.389,1123.57 927.341,1105.74C925.292,1087.9 925.416,1065.43 928.024,1054.54C930.631,1043.65 929.124,1032.02 949.194,1013.83C949.194,1013.83 954.455,1008.6 961.372,1013.3Z" style="fill:none;stroke:var(--ink);stroke-width:1.5px;"/>
+          </g>
+        </svg>
+        <div class="example-title">Your label here</div>
+        <div class="example-desc">Your description here</div>
+      </div>
+      <div class="example-card">
+        <svg viewBox="0 0 140 120">
+          <path d="M 30 45 Q 25 60 32 78 Q 45 92 65 88 Q 85 95 100 82 Q 115 70 108 50 Q 112 32 95 28 Q 78 20 60 30 Q 40 25 30 45 Z" fill="none" stroke="var(--moss)" stroke-width="2"/>
+          <circle cx="55" cy="52" r="6" fill="none" stroke="var(--moss)" stroke-width="1.5"/>
+          <circle cx="78" cy="65" r="5" fill="none" stroke="var(--moss)" stroke-width="1.5"/>
+          <circle cx="62" cy="75" r="4" fill="none" stroke="var(--moss)" stroke-width="1.5"/>
+        </svg>
+        <div class="example-title">Reticulate (fenestrated)</div>
+        <div class="example-desc">Net-like, perforated — e.g. Hydrodictyon, Oedogoniales.</div>
+      </div>
+      <div class="example-card">
+        <svg viewBox="0 0 140 120"><circle cx="70" cy="60" r="34" fill="none" stroke="var(--moss)" stroke-width="9"/></svg>
+        <div class="example-title">Ring-shaped</div>
+        <div class="example-desc">A closed band around the cell — e.g. Ulothrix.</div>
+      </div>
+      <div class="example-card">
+        <svg viewBox="0 0 140 120"><path d="M 20 60 Q 33 25 46 60 T 72 60 T 98 60 T 120 60" fill="none" stroke="var(--moss)" stroke-width="6" stroke-linecap="round"/></svg>
+        <div class="example-title">Ribbon-shaped (helical)</div>
+        <div class="example-desc">Spirally twisted, extending the cell's length — e.g. Spirogyra.</div>
+      </div>
+      <div class="example-card">
+        <svg viewBox="0 0 140 120"><rect x="35" y="35" width="70" height="50" fill="none" stroke="var(--moss)" stroke-width="2.5"/></svg>
+        <div class="example-title">Cuboid (axial plate)</div>
+        <div class="example-desc">Flat, plate-like — e.g. Mougeotia, Mesotaenium.</div>
+      </div>
+      <div class="example-card">
+        <svg viewBox="0 0 140 120"><path d="M70,20 L80,50 L112,50 L86,68 L96,100 L70,80 L44,100 L54,68 L28,50 L60,50 Z" fill="var(--ochre)" opacity="0.5" stroke="var(--moss)" stroke-width="2"/></svg>
+        <div class="example-title">Star-shaped (stellate)</div>
+        <div class="example-desc">Extensively lobed — e.g. Zygnema, Porphyridium, Rhodella.</div>
+      </div>
+      <div class="example-card">
+        <svg viewBox="0 0 140 120">
+          <ellipse cx="42" cy="60" rx="26" ry="30" fill="none" stroke="var(--moss)" stroke-width="2.5"/>
+          <ellipse cx="98" cy="60" rx="26" ry="30" fill="none" stroke="var(--moss)" stroke-width="2.5"/>
+          <circle cx="70" cy="60" r="7" fill="var(--ochre)" opacity="0.8"/>
+        </svg>
+        <div class="example-title">Two-lobed (butterfly)</div>
+        <div class="example-desc">Two lobes joined by a central/basal pyrenoid — e.g. Cryptomonas, Pavlova.</div>
+      </div>
+      <div class="example-card">
+        <svg viewBox="0 0 140 120">
+          <path d="M 55 45 Q 70 35 85 48 Q 95 60 82 72 Q 68 82 55 70 Q 45 58 55 45 Z" fill="var(--ink-soft)" opacity="0.3" stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="3 2"/>
+          <text x="70" y="65" font-family="IBM Plex Mono, monospace" font-size="16" fill="var(--ink-soft)" text-anchor="middle">?</text>
+        </svg>
+        <div class="example-title">Other</div>
+        <div class="example-desc">Doesn't fit the above — describe in the cell-type/notes field.</div>
+      </div>
     </div>
-    <p class="section-note">The pyrenoid's position relative to the rest of the chloroplast — usually the first thing visible at low magnification.</p>
+
+    <div class="subnote"><b>Pyrenoids per chloroplast:</b> a plain count — most unicellular algae have one, but note how many are visible if more.</div>
+    <div class="subnote"><b>Edge cases not separately coded:</b> a stellate chloroplast sharing one pyrenoid across its lobes via a shared cap, or multiple chloroplasts sharing one extra-chloroplastic cap — rare enough to describe in the notes field rather than force into a dropdown.</div>
+    <div class="subnote"><b>Cell type:</b> only fill in if presence or form is cell-type specific (e.g. "gametes only") — leave blank otherwise.</div>
+    <div class="further">Reference: Solymosi, K. — Plastid Structure, Diversification and Interconversions I. Algae.</div>
+  </section>
+
+  <!-- ============ 02: GENERAL CLASS ============ -->
+  <section id="general-class">
+    <div class="section-head"><span class="section-num">02</span><h2>General class</h2></div>
+    <p class="section-note">The pyrenoid's position relative to the chloroplast body.</p>
 
     <div class="card-grid">
       <div class="example-card">
@@ -139,28 +221,25 @@
           <circle cx="70" cy="60" r="20" fill="var(--ochre)" opacity="0.75"/>
         </svg>
         <div class="example-title">Central</div>
-        <div class="example-desc">Sits in the middle of the chloroplast body, roughly equidistant from the margins.</div>
+        <div class="example-desc">Not in contact with the chloroplast envelope — e.g. Chlamydomonas, Porphyridium, Thalassiosira.</div>
       </div>
-
       <div class="example-card">
         <svg viewBox="0 0 140 120">
-          <ellipse cx="60" cy="60" rx="45" ry="35" fill="none" stroke="var(--moss)" stroke-width="2"/>
-          <path d="M 100 55 Q 118 55 122 60 Q 118 65 100 65" fill="none" stroke="var(--moss)" stroke-width="2"/>
-          <circle cx="126" cy="60" r="13" fill="var(--ochre)" opacity="0.75"/>
+          <ellipse cx="55" cy="60" rx="42" ry="34" fill="none" stroke="var(--moss)" stroke-width="2"/>
+          <path d="M 95 56 Q 108 56 111 60 Q 108 64 95 64" fill="none" stroke="var(--moss)" stroke-width="2"/>
+          <circle cx="120" cy="60" r="14" fill="var(--ochre)" opacity="0.75"/>
         </svg>
         <div class="example-title">Stalked</div>
-        <div class="example-desc">Connected to the main chloroplast body by a narrow neck, projecting outward from it.</div>
+        <div class="example-desc">Bulges out through the envelope via a narrow constriction — apical or lateral.</div>
       </div>
-
       <div class="example-card">
         <svg viewBox="0 0 140 120">
-          <ellipse cx="70" cy="60" rx="55" ry="40" fill="none" stroke="var(--moss)" stroke-width="2"/>
-          <circle cx="118" cy="60" r="17" fill="var(--ochre)" opacity="0.75"/>
+          <ellipse cx="55" cy="60" rx="42" ry="34" fill="none" stroke="var(--moss)" stroke-width="2"/>
+          <circle cx="112" cy="60" r="19" fill="var(--ochre)" opacity="0.75"/>
         </svg>
-        <div class="example-title">Peripheral</div>
-        <div class="example-desc">Positioned at or right against the chloroplast margin, rather than embedded centrally.</div>
+        <div class="example-title">Bulged</div>
+        <div class="example-desc">Same idea, but no constriction — wide-based from where it leaves the chloroplast.</div>
       </div>
-
       <div class="example-card">
         <svg viewBox="0 0 140 120">
           <ellipse cx="70" cy="60" rx="55" ry="40" fill="none" stroke="var(--moss)" stroke-width="2"/>
@@ -168,20 +247,106 @@
           <text x="70" y="65" font-family="IBM Plex Mono, monospace" font-size="16" fill="var(--ink-soft)" text-anchor="middle">?</text>
         </svg>
         <div class="example-title">Other</div>
-        <div class="example-desc">Doesn't fit the three patterns above — use the free-text field to describe what's actually seen.</div>
+        <div class="example-desc">Doesn't fit the three above — describe in the free-text field.</div>
       </div>
     </div>
 
-    <div class="further">Example in the literature: Gibbs, S.P. (1962) illustrates this kind of positional variation across multiple divisions in one paper.</div>
+    <div class="subnote"><b>Position (stalked/bulged only):</b> apical (at the end of the chloroplast) or lateral (from the side).</div>
   </section>
 
-  <!-- ============ SECTION 2: TRAVERSING MEMBRANES ============ -->
-  <section id="traversing-membranes">
-    <div class="section-head">
-      <span class="section-num">02</span>
-      <h2>Traversing membranes</h2>
+  <!-- ============ 03: MATRIX SHAPE ============ -->
+  <section id="matrix-shape">
+    <div class="section-head"><span class="section-num">03</span><h2>Matrix shape</h2></div>
+    <p class="section-note">The shape of the pyrenoid matrix itself, separate from the chloroplast or the general class above.</p>
+
+    <div class="card-grid">
+      <div class="example-card">
+        <svg viewBox="0 0 140 120"><circle cx="70" cy="60" r="32" fill="var(--ochre)" opacity="0.6"/></svg>
+        <div class="example-title">Spherical / pseudo-spherical</div>
+        <div class="example-desc">Broadly rounded — includes matrices that appear slightly misshapen only due to a stalked constriction.</div>
+      </div>
+      <div class="example-card">
+        <svg viewBox="0 0 140 120"><ellipse cx="70" cy="60" rx="42" ry="18" fill="var(--ochre)" opacity="0.6"/></svg>
+        <div class="example-title">Lenticular</div>
+        <div class="example-desc">Lens-shaped — e.g. diatom pyrenoids.</div>
+      </div>
+      <div class="example-card">
+        <svg viewBox="0 0 140 120"><path d="M70,28 C90,28 100,45 98,58 C118,60 122,80 105,90 C95,105 75,100 70,88 C55,105 35,95 38,80 C20,75 22,52 42,50 C40,35 55,28 70,28 Z" fill="var(--ochre)" opacity="0.6"/></svg>
+        <div class="example-title">Lobed</div>
+        <div class="example-desc">One matrix, several rounded lobes.</div>
+      </div>
+      <div class="example-card">
+        <svg viewBox="0 0 140 120">
+          <circle cx="52" cy="50" r="18" fill="var(--ochre)" opacity="0.6"/>
+          <circle cx="90" cy="48" r="15" fill="var(--ochre)" opacity="0.6"/>
+          <circle cx="68" cy="78" r="16" fill="var(--ochre)" opacity="0.6"/>
+          <line x1="52" y1="50" x2="90" y2="48" stroke="var(--moss)" stroke-width="1.5"/>
+          <line x1="68" y1="78" x2="52" y2="50" stroke="var(--moss)" stroke-width="1.5"/>
+          <line x1="68" y1="78" x2="90" y2="48" stroke="var(--moss)" stroke-width="1.5"/>
+        </svg>
+        <div class="example-title">Multinucleate</div>
+        <div class="example-desc">Fragmented into separate matrices, divided by traversing thylakoids — e.g. Anthoceros.</div>
+      </div>
+      <div class="example-card">
+        <svg viewBox="0 0 140 120"><path d="M45,40 Q75,25 95,45 Q115,55 100,75 Q105,95 80,92 Q60,105 48,85 Q25,80 35,58 Q25,45 45,40 Z" fill="var(--ochre)" opacity="0.6"/></svg>
+        <div class="example-title">Amorphous</div>
+        <div class="example-desc">Continuous but not spherical and not clearly lobed.</div>
+      </div>
+      <div class="example-card">
+        <svg viewBox="0 0 140 120">
+          <circle cx="70" cy="60" r="30" fill="none" stroke="var(--ink-soft)" stroke-width="2" stroke-dasharray="4 3"/>
+          <text x="70" y="65" font-family="IBM Plex Mono, monospace" font-size="14" fill="var(--ink-soft)" text-anchor="middle">?</text>
+        </svg>
+        <div class="example-title">Other</div>
+        <div class="example-desc">Describe in the notes field.</div>
+      </div>
     </div>
-    <p class="section-note">Whether thylakoid-derived membranes penetrate through the pyrenoid matrix. First call present/absent/unclear on the form; if present, these four shapes describe how.</p>
+
+    <div class="subnote"><b>Diameter:</b> estimate in µm from the image if a scale bar is present — even a rough figure is useful.</div>
+  </section>
+
+  <!-- ============ 04: THYLAKOID APPRESSION ============ -->
+  <section id="appression">
+    <div class="section-head"><span class="section-num">04</span><h2>Thylakoid appression</h2></div>
+    <p class="section-note">Whether thylakoids sit directly against the matrix surface — separate from whether membranes traverse through it (next section).</p>
+
+    <div class="card-grid">
+      <div class="example-card">
+        <svg viewBox="0 0 140 120"><circle cx="70" cy="60" r="34" fill="none" stroke="var(--moss)" stroke-width="2"/></svg>
+        <div class="example-title">Naked (no)</div>
+        <div class="example-desc">No adjacent or appressed thylakoids at the boundary.</div>
+      </div>
+      <div class="example-card">
+        <svg viewBox="0 0 140 120">
+          <circle cx="70" cy="60" r="34" fill="none" stroke="var(--moss)" stroke-width="2"/>
+          <line x1="25" y1="48" x2="40" y2="48" stroke="var(--moss)" stroke-width="2.5"/>
+          <line x1="25" y1="60" x2="38" y2="60" stroke="var(--moss)" stroke-width="2.5"/>
+          <line x1="27" y1="72" x2="40" y2="72" stroke="var(--moss)" stroke-width="2.5"/>
+          <line x1="115" y1="52" x2="102" y2="52" stroke="var(--moss)" stroke-width="2.5"/>
+          <line x1="115" y1="65" x2="101" y2="65" stroke="var(--moss)" stroke-width="2.5"/>
+        </svg>
+        <div class="example-title">Appressed</div>
+        <div class="example-desc">Thylakoids sit flush against the matrix boundary, touching it directly.</div>
+      </div>
+      <div class="example-card">
+        <svg viewBox="0 0 140 120">
+          <circle cx="70" cy="60" r="30" fill="none" stroke="var(--moss)" stroke-width="2"/>
+          <line x1="18" y1="48" x2="30" y2="48" stroke="var(--moss)" stroke-width="2.5"/>
+          <line x1="18" y1="60" x2="28" y2="60" stroke="var(--moss)" stroke-width="2.5"/>
+          <line x1="20" y1="72" x2="30" y2="72" stroke="var(--moss)" stroke-width="2.5"/>
+          <line x1="122" y1="52" x2="112" y2="52" stroke="var(--moss)" stroke-width="2.5"/>
+          <line x1="122" y1="66" x2="111" y2="66" stroke="var(--moss)" stroke-width="2.5"/>
+        </svg>
+        <div class="example-title">Adjacent, not appressed</div>
+        <div class="example-desc">Nearby with a visible gap — e.g. Porphyridium: many thylakoids traverse but don't tightly appress.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 05: TRAVERSING MEMBRANES ============ -->
+  <section id="traversing">
+    <div class="section-head"><span class="section-num">05</span><h2>Traversing membranes</h2></div>
+    <p class="section-note">Whether membranes penetrate through the matrix itself — the core call for the whole classification scheme. First: present/absent/unclear on the form; if present, these four shapes describe how.</p>
 
     <div class="card-grid">
       <div class="example-card">
@@ -192,26 +357,20 @@
           <line x1="75" y1="35" x2="75" y2="85" stroke="var(--moss)" stroke-width="2.5"/>
           <line x1="95" y1="40" x2="95" y2="80" stroke="var(--moss)" stroke-width="2.5"/>
         </svg>
-        <div class="example-title">Sheet</div>
-        <div class="example-desc">Membranes run through as continuous, unbroken sheets spanning the matrix.</div>
+        <div class="example-title">Sheets</div>
+        <div class="example-desc">Continuous, unbroken sheets spanning the matrix — e.g. P. bulbiculosus (multiple sheets).</div>
       </div>
-
       <div class="example-card">
         <svg viewBox="0 0 140 120">
           <circle cx="70" cy="60" r="45" fill="none" stroke="var(--line)" stroke-width="1.5"/>
-          <line x1="35" y1="40" x2="35" y2="52" stroke="var(--moss)" stroke-width="2.5"/>
-          <line x1="35" y1="62" x2="35" y2="80" stroke="var(--moss)" stroke-width="2.5"/>
-          <line x1="55" y1="35" x2="55" y2="58" stroke="var(--moss)" stroke-width="2.5"/>
-          <line x1="55" y1="68" x2="55" y2="85" stroke="var(--moss)" stroke-width="2.5"/>
-          <line x1="75" y1="35" x2="75" y2="50" stroke="var(--moss)" stroke-width="2.5"/>
-          <line x1="75" y1="60" x2="75" y2="85" stroke="var(--moss)" stroke-width="2.5"/>
-          <line x1="95" y1="40" x2="95" y2="65" stroke="var(--moss)" stroke-width="2.5"/>
-          <line x1="95" y1="75" x2="95" y2="80" stroke="var(--moss)" stroke-width="2.5"/>
+          <line x1="35" y1="40" x2="35" y2="52" stroke="var(--moss)" stroke-width="2.5"/><line x1="35" y1="62" x2="35" y2="80" stroke="var(--moss)" stroke-width="2.5"/>
+          <line x1="55" y1="35" x2="55" y2="58" stroke="var(--moss)" stroke-width="2.5"/><line x1="55" y1="68" x2="55" y2="85" stroke="var(--moss)" stroke-width="2.5"/>
+          <line x1="75" y1="35" x2="75" y2="50" stroke="var(--moss)" stroke-width="2.5"/><line x1="75" y1="60" x2="75" y2="85" stroke="var(--moss)" stroke-width="2.5"/>
+          <line x1="95" y1="40" x2="95" y2="65" stroke="var(--moss)" stroke-width="2.5"/><line x1="95" y1="75" x2="95" y2="80" stroke="var(--moss)" stroke-width="2.5"/>
         </svg>
-        <div class="example-title">Fenestrated</div>
-        <div class="example-desc">Sheet-like, but perforated with gaps — "windows" through the membrane.</div>
+        <div class="example-title">Tubulated</div>
+        <div class="example-desc">Appears fenestrated (perforated) in 2D section.</div>
       </div>
-
       <div class="example-card">
         <svg viewBox="0 0 140 120">
           <circle cx="70" cy="60" r="45" fill="none" stroke="var(--line)" stroke-width="1.5"/>
@@ -221,9 +380,8 @@
           <path d="M 95 40 Q 105 60 95 80" fill="none" stroke="var(--moss)" stroke-width="2.5"/>
         </svg>
         <div class="example-title">Curved</div>
-        <div class="example-desc">Membranes follow a curved rather than straight path through the matrix.</div>
+        <div class="example-desc">Follows a curved path — e.g. Porphyridium.</div>
       </div>
-
       <div class="example-card">
         <svg viewBox="0 0 140 120">
           <circle cx="70" cy="60" r="45" fill="none" stroke="var(--line)" stroke-width="1.5"/>
@@ -232,88 +390,80 @@
           <path d="M 108 42 L 88 52 L 108 62" fill="none" stroke="var(--moss)" stroke-width="2.5"/>
         </svg>
         <div class="example-title">Invaginated</div>
-        <div class="example-desc">Membrane folds inward from the boundary without necessarily spanning all the way through.</div>
+        <div class="example-desc">Folds inward from the boundary — usually can't resolve which membrane (envelope vs. other) at typical resolution, so just call it invagination.</div>
       </div>
     </div>
 
-    <div class="subnote"><b>Continuous with external thylakoids?</b> A separate yes/no/unclear call on the form — whether the traversing membrane connects directly to thylakoids outside the pyrenoid, or is disconnected/free-ending within it.</div>
-    <div class="further">Example in the literature: Griffiths, D.J. (1970) reviews this range of membrane configurations across genera.</div>
+    <div class="subnote"><b>Continuous with external thylakoid network?</b> Only asked for sheets, tubulated, or curved — not invaginations, which by definition aren't continuous with the network.</div>
+    <div class="subnote"><b>Extent:</b> complete (spans the whole matrix, usual for sheets/curved), partial (enters from the edge, doesn't reach the other side — usual for tubulated/fenestrations), or discontinuous.</div>
+    <div class="subnote"><b>Number of traversions:</b> 1 / 2 / 3 / many — applies whether or not they fully pass through (e.g. Porphyridium's curved traversions, or multiple sheets as in P. bulbiculosus).</div>
   </section>
 
-  <!-- ============ SECTION 3: DIFFUSION BARRIER ============ -->
-  <section id="diffusion-barrier">
-    <div class="section-head">
-      <span class="section-num">03</span>
-      <h2>Diffusion barrier</h2>
-    </div>
-    <p class="section-note">Whatever structure surrounds the matrix and (presumably) limits CO₂/O₂ diffusion — not every pyrenoid has one, and where present it takes several different forms.</p>
+  <!-- ============ 06: DIFFUSION BARRIER ============ -->
+  <section id="barrier">
+    <div class="section-head"><span class="section-num">06</span><h2>Diffusion barrier</h2></div>
+    <p class="section-note">Three independent yes/no/unclear questions, not mutually exclusive — a pyrenoid could plausibly have more than one of these at once.</p>
 
-    <div class="card-grid">
+    <h3>Carbohydrate barrier</h3>
+    <div class="card-grid" style="max-width:220px;">
       <div class="example-card">
         <svg viewBox="0 0 140 120">
           <circle cx="70" cy="60" r="26" fill="var(--ochre)" opacity="0.5"/>
           <circle cx="70" cy="60" r="34" fill="none" stroke="var(--ink-soft)" stroke-width="2"/>
           <circle cx="70" cy="60" r="42" fill="none" stroke="var(--ink-soft)" stroke-width="2"/>
         </svg>
-        <div class="example-title">Carbohydrate</div>
-        <div class="example-desc">Typically a starch sheath — one or more concentric plate-like layers around the matrix.</div>
+        <div class="example-title">Present</div>
+        <div class="example-desc">Starch — also called capping vesicle / pyrenoid sac / pyrenoid cap in older TEMs.</div>
       </div>
+    </div>
+    <div class="subnote"><b>Location:</b> chloroplastic (usually central pyrenoids) or extra-chloroplastic/cytosolic (usually stalked/bulged — a membrane sits between starch and matrix).</div>
+    <div class="subnote"><b>Number of granules/plates:</b> 1 / 2 / 3 / 4+, visible as concentric layers above.</div>
+    <div class="subnote"><b>Appearance:</b> light or dark, depending on staining.</div>
+    <div class="subnote"><b>Coverage:</b> complete, or partial — e.g. multiple granules that don't fully cover the surface, or a capping vesicle that structurally can't (extra-chloroplastic + bulging).</div>
 
-      <div class="example-card">
-        <svg viewBox="0 0 140 120">
-          <circle cx="70" cy="60" r="30" fill="var(--ochre)" opacity="0.4"/>
-          <circle cx="70" cy="60" r="30" fill="none" stroke="var(--moss)" stroke-width="2.5"/>
-        </svg>
-        <div class="example-title">Membrane</div>
-        <div class="example-desc">A distinct membrane boundary directly enclosing the matrix, rather than a starch layer.</div>
-      </div>
-
+    <h3>Shell</h3>
+    <div class="card-grid" style="max-width:220px;">
       <div class="example-card">
         <svg viewBox="0 0 140 120">
           <circle cx="70" cy="60" r="30" fill="var(--ochre)" opacity="0.4"/>
           <circle cx="70" cy="60" r="30" fill="none" stroke="var(--ink)" stroke-width="4.5"/>
         </svg>
-        <div class="example-title">Shell</div>
-        <div class="example-desc">A thick, rigid-looking enclosing layer — visibly more substantial than a simple membrane.</div>
+        <div class="example-title">Present</div>
+        <div class="example-desc">Thin protein layer — often hard to observe; don't force a call if it's genuinely not resolvable.</div>
       </div>
+    </div>
 
+    <h3>Membrane barrier</h3>
+    <div class="card-grid" style="max-width:220px;">
       <div class="example-card">
         <svg viewBox="0 0 140 120">
           <circle cx="70" cy="60" r="30" fill="var(--ochre)" opacity="0.4"/>
-          <circle cx="70" cy="60" r="30" fill="none" stroke="var(--ink-soft)" stroke-width="2" stroke-dasharray="4 3"/>
-          <text x="70" y="65" font-family="IBM Plex Mono, monospace" font-size="14" fill="var(--ink-soft)" text-anchor="middle">?</text>
+          <circle cx="70" cy="60" r="30" fill="none" stroke="var(--moss)" stroke-width="2.5"/>
         </svg>
-        <div class="example-title">Other</div>
-        <div class="example-desc">Something else entirely, or ambiguous from the figure — describe it in the notes field.</div>
+        <div class="example-title">Present</div>
+        <div class="example-desc">A distinct membrane boundary directly enclosing the matrix.</div>
       </div>
     </div>
+    <div class="subnote"><b>Origin:</b> thylakoid / envelope / other.</div>
+    <div class="subnote"><b>Morphology:</b> appressed (flat against the matrix) / curved / other.</div>
 
-    <div class="subnote">
-      <b>If carbohydrate:</b> the form also asks <i>location</i> (chloroplastic vs extra-chloroplastic/cytosolic) and <i>number of layers</i> (1 / 2 / 3 / 4+) — visible as concentric rings in the diagram above.<br>
-      <b>If membrane:</b> the form asks <i>origin</i> (thylakoid-derived / envelope-derived / other) and <i>morphology</i> (appressed flat against the matrix / curved around it / other).
-    </div>
-    <div class="further">Example in the literature: Holdsworth, R.H. (1968) describes a crystalline matrix boundary in a diatom pyrenoid — a case worth comparing against the "shell" category above.</div>
+    <div class="further">Reference for the shell case: Holdsworth, R.H. (1968) — crystalline matrix boundary in a diatom pyrenoid.</div>
   </section>
 
-  <!-- ============ SECTION 4: PLASTOGLOBULI ============ -->
+  <!-- ============ 07: PLASTOGLOBULI ============ -->
   <section id="plastoglobuli">
-    <div class="section-head">
-      <span class="section-num">04</span>
-      <h2>Plastoglobuli</h2>
-    </div>
-    <p class="section-note">Small, roughly spherical lipid droplets, sometimes visible in or around the pyrenoid — a simple yes/no call, with an optional free-text location if present.</p>
+    <div class="section-head"><span class="section-num">07</span><h2>Plastoglobuli</h2></div>
+    <p class="section-note">Small, roughly spherical lipid droplets, sometimes visible in or around the pyrenoid.</p>
 
-    <div class="card-grid" style="max-width: 240px;">
+    <div class="card-grid" style="max-width:220px;">
       <div class="example-card">
         <svg viewBox="0 0 140 120">
           <circle cx="70" cy="60" r="38" fill="none" stroke="var(--moss)" stroke-width="2"/>
-          <circle cx="50" cy="42" r="5" fill="var(--ink)"/>
-          <circle cx="90" cy="48" r="4" fill="var(--ink)"/>
-          <circle cx="60" cy="80" r="4.5" fill="var(--ink)"/>
-          <circle cx="95" cy="75" r="3.5" fill="var(--ink)"/>
+          <circle cx="50" cy="42" r="5" fill="var(--ink)"/><circle cx="90" cy="48" r="4" fill="var(--ink)"/>
+          <circle cx="60" cy="80" r="4.5" fill="var(--ink)"/><circle cx="95" cy="75" r="3.5" fill="var(--ink)"/>
         </svg>
         <div class="example-title">Present</div>
-        <div class="example-desc">Small dark globules — often peripheral to the matrix, but note the actual location seen.</div>
+        <div class="example-desc">Small dark globules — note the actual location seen (often peripheral).</div>
       </div>
     </div>
   </section>
