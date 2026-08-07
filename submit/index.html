@@ -787,6 +787,14 @@ async function lookupDoi(){
 
 document.getElementById('doiLookupBtn').addEventListener('click', lookupDoi);
 
+// Remembered from a previous submission on this device, if any — saves re-typing for repeat submitters.
+try {
+  const savedName = localStorage.getItem('pybase_submitter_name');
+  const savedEmail = localStorage.getItem('pybase_submitter_email');
+  if (savedName) document.getElementById('submitter_name').value = savedName;
+  if (savedEmail) document.getElementById('submitter_email').value = savedEmail;
+} catch(storageErr){ /* private browsing or storage disabled — form just starts blank */ }
+
 // Arrived from the to-do list with a specific paper in mind — prefill and look it up automatically.
 const urlParams = new URLSearchParams(window.location.search);
 const prefillDoi = urlParams.get('doi');
@@ -1089,7 +1097,15 @@ form.addEventListener('submit', async (e) => {
     const { error } = await supabaseClient.from('submissions').insert([record]);
     if (error) throw error;
     setStatus('Submitted. Thank you.', 'ok');
+    const rememberedName = record.submitter_name;
+    const rememberedEmail = record.submitter_email;
+    try {
+      localStorage.setItem('pybase_submitter_name', rememberedName);
+      localStorage.setItem('pybase_submitter_email', rememberedEmail);
+    } catch(storageErr){ /* private browsing or storage disabled — not worth failing the submission over */ }
     form.reset();
+    document.getElementById('submitter_name').value = rememberedName;
+    document.getElementById('submitter_email').value = rememberedEmail;
     chips.forEach(c => c.classList.remove('active'));
     referenceMeta = { title: '', authors: '', year: null, journal: '' };
     document.getElementById('doiLookupStatus').textContent = '';
