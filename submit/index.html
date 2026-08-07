@@ -308,6 +308,59 @@
     </fieldset>
 
     <fieldset>
+      <legend>Source</legend>
+      <div class="row">
+        <div class="field">
+          <label for="doi">DOI <span class="hint">paste it here first, then look it up</span></label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="doi" placeholder="10.1073/pnas.1213498109 or a doi.org link" style="flex:1;">
+            <button type="button" id="doiLookupBtn" class="ghost" style="background:transparent; color:var(--moss-deep); border:1px solid var(--line); text-transform:none; letter-spacing:0; padding:9px 14px; font-size:12.5px; border-radius:var(--radius); cursor:pointer; white-space:nowrap;">Look up</button>
+          </div>
+          <div id="doiLookupStatus" style="font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ink-soft); margin-top:6px;"></div>
+        </div>
+        <div class="field">
+          <label for="reference_citation">Reference citation <span class="req">*</span> <span class="hint">fills in automatically from the DOI, or type it yourself</span></label>
+          <input type="text" id="reference_citation" placeholder="Author(s), year, journal" required>
+          <div id="duplicateWarning" style="font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ochre); margin-top:6px;"></div>
+        </div>
+      </div>
+      <div class="row single">
+        <div class="field">
+          <label for="paper_link">Link to the paper <span class="hint">if the DOI lookup didn't work, or there's no DOI — a journal page, PDF, or any working link</span></label>
+          <input type="url" id="paper_link" placeholder="https://…">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Presence</legend>
+      <div class="row">
+        <div class="field">
+          <label for="presence_call">Presence <span class="req">*</span></label>
+          <select id="presence_call" required>
+            <option value="">Select…</option>
+            <option value="present">Present</option>
+            <option value="absent">Absent</option>
+            <option value="equivocal">Equivocal / disputed</option>
+            <option value="not_assessed">Not assessed in this source</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="method">Method of assessment</label>
+          <select id="method">
+            <option value="">Select…</option>
+            <option value="tem">Transmission EM</option>
+            <option value="light_microscopy">Light microscopy</option>
+            <option value="tomography">Electron tomography</option>
+            <option value="other">Other / not specified</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <div id="presentDetailWrap" style="display:none;">
+
+    <fieldset>
       <legend>Chloroplast morphology</legend>
       <div class="row">
         <div class="field">
@@ -336,55 +389,8 @@
     </fieldset>
 
     <fieldset>
-      <legend>Source</legend>
-      <div class="row">
-        <div class="field">
-          <label for="doi">DOI <span class="hint">paste it here first, then look it up</span></label>
-          <div style="display:flex; gap:8px;">
-            <input type="text" id="doi" placeholder="10.1073/pnas.1213498109 or a doi.org link" style="flex:1;">
-            <button type="button" id="doiLookupBtn" class="ghost" style="background:transparent; color:var(--moss-deep); border:1px solid var(--line); text-transform:none; letter-spacing:0; padding:9px 14px; font-size:12.5px; border-radius:var(--radius); cursor:pointer; white-space:nowrap;">Look up</button>
-          </div>
-          <div id="doiLookupStatus" style="font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ink-soft); margin-top:6px;"></div>
-        </div>
-        <div class="field">
-          <label for="reference_citation">Reference citation <span class="req">*</span> <span class="hint">fills in automatically from the DOI, or type it yourself</span></label>
-          <input type="text" id="reference_citation" placeholder="Author(s), year, journal" required>
-          <div id="duplicateWarning" style="font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ochre); margin-top:6px;"></div>
-        </div>
-      </div>
+      <legend>General class</legend>
       <div class="row single">
-        <div class="field">
-          <label for="paper_link">Link to the paper <span class="hint">if the DOI lookup didn't work, or there's no DOI — a journal page, PDF, or any working link</span></label>
-          <input type="url" id="paper_link" placeholder="https://…">
-        </div>
-      </div>
-    </fieldset>
-
-    <fieldset>
-      <legend>Pyrenoid call</legend>
-      <div class="row">
-        <div class="field">
-          <label for="presence_call">Presence <span class="req">*</span></label>
-          <select id="presence_call" required>
-            <option value="">Select…</option>
-            <option value="present">Present</option>
-            <option value="absent">Absent</option>
-            <option value="equivocal">Equivocal / disputed</option>
-            <option value="not_assessed">Not assessed in this source</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="method">Method of assessment</label>
-          <select id="method">
-            <option value="">Select…</option>
-            <option value="tem">Transmission EM</option>
-            <option value="light_microscopy">Light microscopy</option>
-            <option value="tomography">Electron tomography</option>
-            <option value="other">Other / not specified</option>
-          </select>
-        </div>
-      </div>
-      <div class="row single" id="pyrenoidClassWrap" style="display:none;">
         <div class="field">
           <label for="pyrenoid_class">General class</label>
           <select id="pyrenoid_class">
@@ -637,6 +643,8 @@
       </div>
     </fieldset>
 
+    </div>
+
     <fieldset>
       <legend>Image</legend>
       <div class="field">
@@ -852,7 +860,7 @@ document.getElementById('species_name').addEventListener('input', () => {
 });
 
 document.getElementById('presence_call').addEventListener('change', (e) => {
-  document.getElementById('pyrenoidClassWrap').style.display = (e.target.value === 'present') ? '' : 'none';
+  document.getElementById('presentDetailWrap').style.display = (e.target.value === 'present') ? '' : 'none';
 });
 
 async function checkForDuplicate(){
