@@ -330,6 +330,14 @@
           <input type="url" id="paper_link" placeholder="https://…">
         </div>
       </div>
+      <div class="row single">
+        <div class="field">
+          <label style="display:flex; align-items:center; gap:8px; min-height:auto;">
+            <input type="checkbox" id="is_unpublished" style="width:auto;">
+            Unpublished result <span class="hint">tick if this is your own unpublished data, not from a formal paper</span>
+          </label>
+        </div>
+      </div>
     </fieldset>
 
     <fieldset>
@@ -368,7 +376,7 @@
           <select id="chloroplast_morphology">
             <option value="">Not reported</option>
             <option value="discoid">Discoid / lens-shaped</option>
-            <option value="stellate">Star-shaped (stellate)</option>
+            <option value="stellate">Stellate</option>
             <option value="cup_shaped">Cup-shaped</option>
             <option value="two_lobed">Two-lobed (butterfly)</option>
             <option value="lobed">Lobed</option>
@@ -389,10 +397,10 @@
     </fieldset>
 
     <fieldset>
-      <legend>General class</legend>
+      <legend>Intraplastid pyrenoid location</legend>
       <div class="row single">
         <div class="field">
-          <label for="pyrenoid_class">General class</label>
+          <label for="pyrenoid_class">Location</label>
           <select id="pyrenoid_class">
             <option value="">Not reported</option>
             <option value="central">Central</option>
@@ -447,18 +455,6 @@
 
       <div class="row">
         <div class="field">
-          <label for="thylakoid_appression_present">Thylakoids running close around the matrix? <span class="hint">contact with the matrix itself — thylakoids around a starch sheath don't count. See "traversing membranes" below for passage through. "Naked" = no</span></label>
-          <select id="thylakoid_appression_present">
-            <option value="">Not reported</option>
-            <option value="yes">Yes</option>
-            <option value="no">No (naked)</option>
-            <option value="unclear">Unclear</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="field">
           <label for="traversing_membranes">Traversing membranes</label>
           <select id="traversing_membranes">
             <option value="">Not reported</option>
@@ -477,6 +473,7 @@
             <option value="fenestrated">Fenestrated</option>
             <option value="curved">Curved <span style="font-weight:400;">(e.g. Porphyridium)</span></option>
             <option value="invaginated">Invaginated</option>
+            <option value="proximal">Proximal <span style="font-weight:400;">(close to entering, perpendicular approach — e.g. stalked/bulged)</span></option>
           </select>
         </div>
         <div class="field" id="continuousWithThylakoidsWrap" style="display:none;">
@@ -501,15 +498,8 @@
           </select>
         </div>
         <div class="field">
-          <label for="traversal_count">Number of traversions</label>
-          <select id="traversal_count">
-            <option value="">Not reported</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="many">Many</option>
-            <option value="unclear">Unclear</option>
-          </select>
+          <label for="traversal_count">Number of traversions <span class="hint">count them directly</span></label>
+          <input type="text" id="traversal_count" placeholder="e.g. 3">
         </div>
       </div>
 
@@ -534,23 +524,18 @@
           </select>
         </div>
         <div class="field">
-          <label for="starch_count">Number of granules / plates</label>
-          <select id="starch_count">
-            <option value="">Not reported</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4_plus">4+</option>
-          </select>
+          <label for="starch_count">Number of granules / plates <span class="hint">count them directly</span></label>
+          <input type="text" id="starch_count" placeholder="e.g. 2">
         </div>
       </div>
       <div class="row" id="carbohydrateDetail2" style="display:none;">
         <div class="field">
-          <label for="starch_appearance">Appearance</label>
-          <select id="starch_appearance">
+          <label for="starch_morphology">Morphology</label>
+          <select id="starch_morphology">
             <option value="">Not reported</option>
-            <option value="light">Light (staining-dependent)</option>
-            <option value="dark">Dark (staining-dependent)</option>
+            <option value="plate">Plate <span style="font-weight:400;">(continuous, often hugging the matrix periphery)</span></option>
+            <option value="granule">Granule <span style="font-weight:400;">(adjacent, more amorphous)</span></option>
+            <option value="other">Other</option>
           </select>
         </div>
         <div class="field">
@@ -565,7 +550,7 @@
 
       <div class="row">
         <div class="field">
-          <label for="shell_present">Shell present? <span class="hint">thin protein layer — often hard to observe</span></label>
+          <label for="shell_present">Shell present? <span class="hint">thin protein layer — often hard to observe. See Shimakawa et al. (2024) Cell</span></label>
           <select id="shell_present">
             <option value="">Not reported</option>
             <option value="yes">Yes</option>
@@ -577,7 +562,7 @@
 
       <div class="row">
         <div class="field">
-          <label for="membrane_barrier_present">Surrounding membrane present?</label>
+          <label for="membrane_barrier_present">Surrounding membrane present? <span class="hint">a membrane closely surrounding or touching the matrix — includes thylakoids running close/appressed to it</span></label>
           <select id="membrane_barrier_present">
             <option value="">Not reported</option>
             <option value="yes">Yes</option>
@@ -595,6 +580,10 @@
             <option value="envelope">Envelope</option>
             <option value="other">Other</option>
           </select>
+        </div>
+        <div class="field" id="barrierMembraneSubtypeOtherWrap" style="display:none;">
+          <label for="barrier_membrane_subtype_other">Specify</label>
+          <input type="text" id="barrier_membrane_subtype_other" placeholder="e.g. ER-derived">
         </div>
         <div class="field">
           <label for="barrier_membrane_morphology">Morphology</label>
@@ -660,15 +649,6 @@
       <div class="field">
         <label for="image_url">Or a link to the figure <span class="hint">if you'd rather not upload — page/figure number or a URL</span></label>
         <input type="text" id="image_url" placeholder="e.g. Fig. 3B, or a URL">
-      </div>
-      <div class="field">
-        <label for="image_rights">Rights status</label>
-        <div class="checkgrid" id="image_rights_chips">
-          <label class="chip"><input type="radio" name="image_rights" value="own_figure">Own figure</label>
-          <label class="chip"><input type="radio" name="image_rights" value="permission_obtained">Permission obtained</label>
-          <label class="chip"><input type="radio" name="image_rights" value="internal_only">Internal use only, unresolved</label>
-          <label class="chip"><input type="radio" name="image_rights" value="not_applicable">No image</label>
-        </div>
       </div>
     </fieldset>
 
@@ -736,14 +716,6 @@ async function loadEntryCount(){
   }
 }
 loadEntryCount();
-
-const chips = document.querySelectorAll('#image_rights_chips .chip');
-chips.forEach(chip => {
-  chip.addEventListener('click', () => {
-    chips.forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
-  });
-});
 
 let referenceMeta = { title: '', authors: '', year: null, journal: '' };
 
@@ -920,6 +892,10 @@ document.getElementById('membrane_barrier_present').addEventListener('change', (
   document.getElementById('membraneBarrierDetail').style.display = (e.target.value === 'yes') ? '' : 'none';
 });
 
+document.getElementById('barrier_membrane_subtype').addEventListener('change', (e) => {
+  document.getElementById('barrierMembraneSubtypeOtherWrap').style.display = (e.target.value === 'other') ? '' : 'none';
+});
+
 document.getElementById('plastoglobuli').addEventListener('change', (e) => {
   document.getElementById('plastoglobuliLocationWrap').style.display = (e.target.value === 'yes') ? '' : 'none';
 });
@@ -1020,8 +996,6 @@ form.addEventListener('submit', async (e) => {
   setStatus('Submitting…');
   thanksPanel.style.display = 'none';
 
-  const activeChip = document.querySelector('#image_rights_chips input:checked');
-
   const record = {
     submitter_name: fieldVal('submitter_name'),
     submitter_email: fieldVal('submitter_email'),
@@ -1032,6 +1006,7 @@ form.addEventListener('submit', async (e) => {
     doi: fieldVal('doi'),
     presence_call: fieldVal('presence_call'),
     method: fieldVal('method'),
+    is_unpublished: document.getElementById('is_unpublished').checked,
     chloroplast_morphology: fieldVal('chloroplast_morphology'),
     pyrenoids_per_chloroplast: fieldVal('pyrenoids_per_chloroplast') || null,
     cell_type_context: fieldVal('cell_type_context'),
@@ -1040,7 +1015,6 @@ form.addEventListener('submit', async (e) => {
     position_type: fieldVal('position_type'),
     matrix_shape: fieldVal('matrix_shape'),
     matrix_diameter_um: fieldVal('matrix_diameter_um') || null,
-    thylakoid_appression_present: fieldVal('thylakoid_appression_present'),
     traversing_membranes: fieldVal('traversing_membranes'),
     continuous_with_thylakoids: fieldVal('continuous_with_thylakoids'),
     membrane_type: fieldVal('membrane_type'),
@@ -1049,11 +1023,12 @@ form.addEventListener('submit', async (e) => {
     carbohydrate_present: fieldVal('carbohydrate_present'),
     starch_location: fieldVal('starch_location'),
     starch_count: fieldVal('starch_count'),
-    starch_appearance: fieldVal('starch_appearance'),
+    starch_morphology: fieldVal('starch_morphology'),
     starch_coverage: fieldVal('starch_coverage'),
     shell_present: fieldVal('shell_present'),
     membrane_barrier_present: fieldVal('membrane_barrier_present'),
     barrier_membrane_subtype: fieldVal('barrier_membrane_subtype'),
+    barrier_membrane_subtype_other: fieldVal('barrier_membrane_subtype_other'),
     barrier_membrane_morphology: fieldVal('barrier_membrane_morphology'),
     plastoglobuli: fieldVal('plastoglobuli'),
     plastoglobuli_location: fieldVal('plastoglobuli_location'),
@@ -1061,7 +1036,6 @@ form.addEventListener('submit', async (e) => {
     nucleomorph_location: fieldVal('nucleomorph_location'),
     ultrastructure_notes: fieldVal('ultrastructure_notes'),
     image_url: fieldVal('image_url'),
-    image_rights: activeChip ? activeChip.value : '',
     notes: fieldVal('notes'),
     reference_title: referenceMeta.title || null,
     reference_authors: referenceMeta.authors || null,
@@ -1114,7 +1088,6 @@ form.addEventListener('submit', async (e) => {
     form.reset();
     document.getElementById('submitter_name').value = rememberedName;
     document.getElementById('submitter_email').value = rememberedEmail;
-    chips.forEach(c => c.classList.remove('active'));
     referenceMeta = { title: '', authors: '', year: null, journal: '' };
     document.getElementById('doiLookupStatus').textContent = '';
     taxonomyMeta = { kingdom: '', phylum: '', class_: '', order_rank: '', family: '', genus: '', gbif_key: null, match_type: '' };
