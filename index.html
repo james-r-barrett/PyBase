@@ -123,11 +123,13 @@
   .stats-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .stat-card{
     background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px;
+    min-height: 200px; display:flex; flex-direction:column;
   }
   .stat-card h3{
     font-family:'IBM Plex Mono', monospace; font-size: 11px; text-transform:uppercase; letter-spacing:0.05em;
     color: var(--ink-soft); margin: 0 0 14px;
   }
+  .stat-card > div{ flex:1; display:flex; flex-direction:column; justify-content:center; }
   .legend{ display:flex; flex-direction:column; gap: 6px; margin-top: 14px; font-size: 12px; }
   .legend-item{ display:flex; align-items:center; gap: 8px; }
   .legend-swatch{ width: 10px; height: 10px; border-radius: 2px; flex-shrink:0; }
@@ -338,7 +340,7 @@ function renderLineChart(containerId, data){
         <circle cx="${w/2}" cy="${cy}" r="4" fill="var(--moss)"/>
         <text x="${w/2}" y="${h+14}" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9" fill="var(--ink-soft)">${escapeHtml(points[0].label)}</text>
       </svg>
-      <div class="progress-label"><b>${max}</b> total — not enough spread yet for a trend line</div>
+      <div class="progress-label">Not enough spread yet for a trend line</div>
     `;
     return;
   }
@@ -359,7 +361,6 @@ function renderLineChart(containerId, data){
       <text x="${pad}" y="${h+14}" font-family="'IBM Plex Mono', monospace" font-size="9" fill="var(--ink-soft)">${escapeHtml(firstLabel)}</text>
       <text x="${w-pad}" y="${h+14}" text-anchor="end" font-family="'IBM Plex Mono', monospace" font-size="9" fill="var(--ink-soft)">${escapeHtml(lastLabel)}</text>
     </svg>
-    <div class="progress-label"><b>${max}</b> total, as of ${escapeHtml(lastLabel)}</div>
   `;
 }
 
