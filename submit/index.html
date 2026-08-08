@@ -474,7 +474,7 @@
           <select id="membrane_type">
             <option value="">Not reported</option>
             <option value="sheet">Sheets</option>
-            <option value="tubulated">Tubulated <span style="font-weight:400;">(appears fenestrated in 2D section)</span></option>
+            <option value="fenestrated">Fenestrated</option>
             <option value="curved">Curved <span style="font-weight:400;">(e.g. Porphyridium)</span></option>
             <option value="invaginated">Invaginated</option>
           </select>
@@ -577,7 +577,7 @@
 
       <div class="row">
         <div class="field">
-          <label for="membrane_barrier_present">Membrane barrier present?</label>
+          <label for="membrane_barrier_present">Surrounding membrane present?</label>
           <select id="membrane_barrier_present">
             <option value="">Not reported</option>
             <option value="yes">Yes</option>
@@ -906,7 +906,7 @@ document.getElementById('traversing_membranes').addEventListener('change', (e) =
 document.getElementById('membrane_type').addEventListener('change', (e) => {
   // Continuity with external thylakoids only makes sense for sheets, tubulated, or curved —
   // not for invaginations, which by definition aren't continuous with the thylakoid network.
-  const askContinuity = ['sheet', 'tubulated', 'curved'].includes(e.target.value);
+  const askContinuity = ['sheet', 'fenestrated', 'curved'].includes(e.target.value);
   document.getElementById('continuousWithThylakoidsWrap').style.display = askContinuity ? '' : 'none';
 });
 
