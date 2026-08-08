@@ -20,6 +20,12 @@
     --line: #C9C0A6;
     --surface: #FFFFFF;
     --radius: 3px;
+    --chart-1: #3E6350;
+    --chart-2: #A97A22;
+    --chart-3: #5B7C99;
+    --chart-4: #A9614E;
+    --chart-5: #7D6B94;
+    --chart-6: #8A8B4E;
   }
   body.dark-mode{
     --paper: #16211C;
@@ -31,6 +37,12 @@
     --ochre: #E0B15E;
     --line: #34423A;
     --surface: #22302A;
+    --chart-1: #6FA184;
+    --chart-2: #E0B15E;
+    --chart-3: #8CA9C2;
+    --chart-4: #CC8A73;
+    --chart-5: #A996BC;
+    --chart-6: #B6B879;
   }
   *{ box-sizing: border-box; }
   body{
@@ -104,6 +116,31 @@
   }
   footer{ margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); }
 
+  .stats{ margin: 40px 0; }
+  .stats h2{
+    font-family:'Fraunces', serif; font-weight:600; font-size: 19px; color: var(--moss-deep); margin: 0 0 16px;
+  }
+  .stats-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .stat-card{
+    background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px;
+  }
+  .stat-card h3{
+    font-family:'IBM Plex Mono', monospace; font-size: 11px; text-transform:uppercase; letter-spacing:0.05em;
+    color: var(--ink-soft); margin: 0 0 14px;
+  }
+  .legend{ display:flex; flex-direction:column; gap: 6px; margin-top: 14px; font-size: 12px; }
+  .legend-item{ display:flex; align-items:center; gap: 8px; }
+  .legend-swatch{ width: 10px; height: 10px; border-radius: 2px; flex-shrink:0; }
+  .legend-label{ color: var(--ink-soft); flex:1; }
+  .legend-value{ font-family:'IBM Plex Mono', monospace; color: var(--ink); }
+  .bar-row{ display:flex; align-items:center; gap: 10px; margin-bottom: 7px; }
+  .bar-label{ font-family:'IBM Plex Mono', monospace; font-size: 11px; color: var(--ink-soft); width: 52px; flex-shrink:0; text-align:right; }
+  .bar-track{ flex:1; background: var(--paper); border-radius: 2px; overflow:hidden; height: 14px; }
+  .bar-fill{ height: 100%; background: var(--moss); border-radius: 2px; }
+  .bar-count{ font-family:'IBM Plex Mono', monospace; font-size: 11px; color: var(--ink-soft); width: 24px; }
+  .stats-empty{ font-family:'IBM Plex Mono', monospace; font-size: 12px; color: var(--ink-soft); }
+
+  @media (max-width: 640px){ .stats-grid{ grid-template-columns: 1fr; } }
   @media (max-width: 560px){ .cards{ grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -143,6 +180,20 @@
     </a>
   </div>
 
+  <div class="stats">
+    <h2>Submitted so far</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>By division</h3>
+        <div id="pieChart"></div>
+      </div>
+      <div class="stat-card">
+        <h3>By publication decade</h3>
+        <div id="decadeChart"></div>
+      </div>
+    </div>
+  </div>
+
   <footer>
     <p class="sub" id="entryCount"></p>
     <p class="sub">Access to the full backend (including in-review submissions and images) can be requested by contacting <a href="mailto:james.barrett@york.ac.uk" style="color:var(--moss-deep);">james.barrett@york.ac.uk</a>.</p>
@@ -176,6 +227,101 @@ async function loadEntryCount(){
   } catch(err){ el.textContent = ''; }
 }
 loadEntryCount();
+
+const CHART_COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)', 'var(--chart-6)'];
+
+function polarToCartesian(cx, cy, r, angleDeg){
+  const rad = (angleDeg - 90) * Math.PI / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
+function arcPath(cx, cy, r, startAngle, endAngle){
+  const start = polarToCartesian(cx, cy, r, endAngle);
+  const end = polarToCartesian(cx, cy, r, startAngle);
+  const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+  return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y} Z`;
+}
+
+function renderPieChart(containerId, data){
+  const container = document.getElementById(containerId);
+  if (!data || data.length === 0){
+    container.innerHTML = '<div class="stats-empty">No records yet.</div>';
+    return;
+  }
+  const total = data.reduce((sum, d) => sum + Number(d.value), 0);
+  if (total === 0){
+    container.innerHTML = '<div class="stats-empty">No records yet.</div>';
+    return;
+  }
+  const cx = 70, cy = 70, r = 62;
+  let angle = 0;
+  let slices = '';
+  data.forEach((d, i) => {
+    const sliceAngle = (Number(d.value) / total) * 360;
+    if (sliceAngle > 0){
+      slices += `<path d="${arcPath(cx, cy, r, angle, angle + sliceAngle)}" fill="${CHART_COLORS[i % CHART_COLORS.length]}" stroke="var(--paper-raised)" stroke-width="1.5"/>`;
+    }
+    angle += sliceAngle;
+  });
+  const legend = data.map((d, i) =>
+    `<div class="legend-item"><span class="legend-swatch" style="background:${CHART_COLORS[i % CHART_COLORS.length]};"></span><span class="legend-label">${escapeHtml(d.label)}</span><span class="legend-value">${d.value}</span></div>`
+  ).join('');
+  container.innerHTML = `
+    <div style="display:flex; gap:18px; align-items:center; flex-wrap:wrap;">
+      <svg viewBox="0 0 140 140" style="width:140px; height:140px; flex-shrink:0;">${slices}</svg>
+      <div class="legend" style="margin-top:0;">${legend}</div>
+    </div>
+  `;
+}
+
+function renderBarChart(containerId, data){
+  const container = document.getElementById(containerId);
+  if (!data || data.length === 0){
+    container.innerHTML = '<div class="stats-empty">No records yet.</div>';
+    return;
+  }
+  const max = Math.max(...data.map(d => Number(d.value)));
+  if (max === 0){
+    container.innerHTML = '<div class="stats-empty">No records yet.</div>';
+    return;
+  }
+  container.innerHTML = data.map(d => {
+    const pct = Math.max((Number(d.value) / max) * 100, 3);
+    return `
+      <div class="bar-row">
+        <span class="bar-label">${escapeHtml(d.label)}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;"></div></div>
+        <span class="bar-count">${d.value}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+async function loadStats(){
+  try {
+    const { data, error } = await supabaseClient.rpc('get_submission_counts_by_division');
+    if (error) throw error;
+    const chartData = (data || []).map(row => ({ label: row.division, value: row.entry_count }))
+      .sort((a, b) => b.value - a.value);
+    renderPieChart('pieChart', chartData);
+  } catch(err){
+    document.getElementById('pieChart').innerHTML = '<div class="stats-empty">Could not load.</div>';
+  }
+
+  try {
+    const { data, error } = await supabaseClient.rpc('get_submission_counts_by_decade');
+    if (error) throw error;
+    const chartData = (data || []).map(row => ({ label: row.decade, value: row.entry_count }));
+    renderBarChart('decadeChart', chartData);
+  } catch(err){
+    document.getElementById('decadeChart').innerHTML = '<div class="stats-empty">Could not load.</div>';
+  }
+}
+loadStats();
 </script>
 </body>
 </html>
