@@ -92,7 +92,7 @@
     color: var(--moss-deep);
     letter-spacing: -0.01em;
   }
-  .sub{ color: var(--ink-soft); font-size: 15.5px; max-width: 58ch; }
+  .sub{ color: var(--ink-soft); font-size: 15.5px; }
 
   .cards{ display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 32px 0; }
   .card-link{
@@ -139,6 +139,11 @@
   .bar-fill{ height: 100%; background: var(--moss); border-radius: 2px; }
   .bar-count{ font-family:'IBM Plex Mono', monospace; font-size: 11px; color: var(--ink-soft); width: 24px; }
   .stats-empty{ font-family:'IBM Plex Mono', monospace; font-size: 12px; color: var(--ink-soft); }
+
+  .progress-track{ background: var(--paper); border-radius: 4px; height: 18px; overflow:hidden; border: 1px solid var(--line); }
+  .progress-fill{ height: 100%; background: var(--moss); }
+  .progress-label{ font-family:'IBM Plex Mono', monospace; font-size: 12px; color: var(--ink-soft); margin-top: 10px; }
+  .progress-label b{ color: var(--ink); font-weight: 600; }
 
   @media (max-width: 640px){ .stats-grid{ grid-template-columns: 1fr; } }
   @media (max-width: 560px){ .cards{ grid-template-columns: 1fr; } }
@@ -191,11 +196,18 @@
         <h3>By publication decade</h3>
         <div id="decadeChart"></div>
       </div>
+      <div class="stat-card">
+        <h3>Literature backlog</h3>
+        <div id="progressChart"></div>
+      </div>
+      <div class="stat-card">
+        <h3>Submissions over time</h3>
+        <div id="timelineChart"></div>
+      </div>
     </div>
   </div>
 
   <footer>
-    <p class="sub" id="entryCount"></p>
     <p class="sub">Access to the full backend (including in-review submissions and images) can be requested by contacting <a href="mailto:james.barrett@york.ac.uk" style="color:var(--moss-deep);">james.barrett@york.ac.uk</a>.</p>
   </footer>
 
@@ -214,19 +226,6 @@ function applyTheme(dark){
 let isDark = false;
 applyTheme(isDark);
 themeToggle.addEventListener('click', () => { isDark = !isDark; applyTheme(isDark); });
-
-async function loadEntryCount(){
-  const el = document.getElementById('entryCount');
-  try {
-    const { data, error } = await supabaseClient.rpc('get_submission_counts_by_division');
-    if (error) throw error;
-    if (!data || data.length === 0){ el.textContent = 'No records submitted yet.'; return; }
-    const total = data.reduce((sum, row) => sum + Number(row.entry_count), 0);
-    const breakdown = data.map(row => row.division + ': ' + row.entry_count).join('  \u00b7  ');
-    el.textContent = total + (total === 1 ? ' record submitted so far — ' : ' records submitted so far — ') + breakdown;
-  } catch(err){ el.textContent = ''; }
-}
-loadEntryCount();
 
 const CHART_COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)', 'var(--chart-6)'];
 
@@ -268,7 +267,12 @@ function renderPieChart(containerId, data){
   ).join('');
   container.innerHTML = `
     <div style="display:flex; gap:18px; align-items:center; flex-wrap:wrap;">
-      <svg viewBox="0 0 140 140" style="width:140px; height:140px; flex-shrink:0;">${slices}</svg>
+      <svg viewBox="0 0 140 140" style="width:140px; height:140px; flex-shrink:0;">
+        ${slices}
+        <circle cx="70" cy="70" r="34" fill="var(--paper-raised)"/>
+        <text x="70" y="66" text-anchor="middle" font-family="'Fraunces', serif" font-weight="600" font-size="22" fill="var(--ink)">${total}</text>
+        <text x="70" y="82" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9" fill="var(--ink-soft)">${total === 1 ? 'record' : 'records'}</text>
+      </svg>
       <div class="legend" style="margin-top:0;">${legend}</div>
     </div>
   `;
@@ -301,6 +305,64 @@ function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
+function renderProgressBar(containerId, reviewed, total){
+  const container = document.getElementById(containerId);
+  if (total === 0){
+    container.innerHTML = '<div class="stats-empty">Nothing in the queue yet.</div>';
+    return;
+  }
+  const pct = Math.round((reviewed / total) * 100);
+  container.innerHTML = `
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+    <div class="progress-label"><b>${reviewed}</b> of <b>${total}</b> papers reviewed (${pct}%)</div>
+  `;
+}
+
+function renderLineChart(containerId, data){
+  const container = document.getElementById(containerId);
+  if (!data || data.length === 0){
+    container.innerHTML = '<div class="stats-empty">No records yet.</div>';
+    return;
+  }
+  let running = 0;
+  const points = data.map(d => { running += Number(d.value); return { label: d.label, value: running }; });
+  const max = points[points.length - 1].value || 1;
+  const w = 260, h = 100, pad = 6;
+
+  if (points.length === 1){
+    // Only one data point — nothing to draw a trend line between yet.
+    // Show a single marker rather than an empty path.
+    const cy = h / 2;
+    container.innerHTML = `
+      <svg viewBox="0 0 ${w} ${h+18}" style="width:100%; height:auto;">
+        <circle cx="${w/2}" cy="${cy}" r="4" fill="var(--moss)"/>
+        <text x="${w/2}" y="${h+14}" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9" fill="var(--ink-soft)">${escapeHtml(points[0].label)}</text>
+      </svg>
+      <div class="progress-label"><b>${max}</b> total — not enough spread yet for a trend line</div>
+    `;
+    return;
+  }
+
+  const stepX = (w - pad * 2) / (points.length - 1);
+  const coords = points.map((p, i) => {
+    const x = pad + i * stepX;
+    const y = h - pad - (p.value / max) * (h - pad * 2);
+    return { x, y };
+  });
+  const linePath = coords.map((c, i) => (i === 0 ? 'M' : 'L') + c.x.toFixed(1) + ',' + c.y.toFixed(1)).join(' ');
+  const areaPath = linePath + ` L${coords[coords.length-1].x.toFixed(1)},${h-pad} L${coords[0].x.toFixed(1)},${h-pad} Z`;
+  const firstLabel = points[0].label, lastLabel = points[points.length-1].label;
+  container.innerHTML = `
+    <svg viewBox="0 0 ${w} ${h+18}" style="width:100%; height:auto;">
+      <path d="${areaPath}" fill="var(--moss)" opacity="0.15"/>
+      <path d="${linePath}" fill="none" stroke="var(--moss)" stroke-width="2"/>
+      <text x="${pad}" y="${h+14}" font-family="'IBM Plex Mono', monospace" font-size="9" fill="var(--ink-soft)">${escapeHtml(firstLabel)}</text>
+      <text x="${w-pad}" y="${h+14}" text-anchor="end" font-family="'IBM Plex Mono', monospace" font-size="9" fill="var(--ink-soft)">${escapeHtml(lastLabel)}</text>
+    </svg>
+    <div class="progress-label"><b>${max}</b> total, as of ${escapeHtml(lastLabel)}</div>
+  `;
+}
+
 async function loadStats(){
   try {
     const { data, error } = await supabaseClient.rpc('get_submission_counts_by_division');
@@ -319,6 +381,30 @@ async function loadStats(){
     renderBarChart('decadeChart', chartData);
   } catch(err){
     document.getElementById('decadeChart').innerHTML = '<div class="stats-empty">Could not load.</div>';
+  }
+
+  try {
+    const { data, error } = await supabaseClient.rpc('get_literature_progress');
+    if (error) throw error;
+    let toReview = 0, covered = 0, notRelevant = 0;
+    (data || []).forEach(row => {
+      if (row.status === 'to_review') toReview = Number(row.entry_count);
+      else if (row.status === 'covered') covered = Number(row.entry_count);
+      else if (row.status === 'not_relevant') notRelevant = Number(row.entry_count);
+    });
+    const total = toReview + covered + notRelevant;
+    renderProgressBar('progressChart', covered + notRelevant, total);
+  } catch(err){
+    document.getElementById('progressChart').innerHTML = '<div class="stats-empty">Could not load.</div>';
+  }
+
+  try {
+    const { data, error } = await supabaseClient.rpc('get_submission_counts_by_month');
+    if (error) throw error;
+    const chartData = (data || []).map(row => ({ label: row.month, value: row.entry_count }));
+    renderLineChart('timelineChart', chartData);
+  } catch(err){
+    document.getElementById('timelineChart').innerHTML = '<div class="stats-empty">Could not load.</div>';
   }
 }
 loadStats();
