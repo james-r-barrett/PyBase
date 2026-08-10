@@ -73,7 +73,7 @@
     color: var(--moss-deep);
     letter-spacing: -0.01em;
   }
-  .sub{ color: var(--ink-soft); font-size: 15px; max-width: 62ch; }
+  .sub{ color: var(--ink-soft); font-size: 15px; }
 
   .controls{
     display:flex; gap:10px; margin: 24px 0 20px; flex-wrap:wrap;
@@ -169,6 +169,9 @@
   .sitenav a{ color:var(--ink-soft); text-decoration:none; padding-bottom:3px; border-bottom:2px solid transparent; }
   .sitenav a:hover{ color:var(--moss-deep); }
   .sitenav a.active{ color:var(--moss-deep); border-bottom-color:var(--moss-deep); }
+  .sitenav a.nav-submit{ color:var(--ochre); }
+  .sitenav a.nav-submit:hover{ color:var(--ochre); }
+  .sitenav a.nav-submit.active{ color:var(--ochre); border-bottom-color:var(--ochre); }
 </style>
 </head>
 <body>
@@ -176,7 +179,7 @@
 
   <nav class="sitenav">
     <a href="../">Home</a>
-    <a href="../submit/">Submit</a>
+    <a href="../submit/" class="nav-submit">Submit</a>
     <a href="../browse/" class="active">Browse</a>
     <a href="../todo/">To-do</a>
     <a href="../guide/">Guide</a>
@@ -229,6 +232,13 @@ function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
+// Escapes everything, then re-opens a tiny allowlist of formatting tags — CrossRef titles often
+// embed <i>/<em> around taxonomic names — safe because only these exact escaped sequences get
+// un-escaped, nothing else can smuggle in real markup.
+function safeInlineHtml(str){
+  return escapeHtml(str).replace(/&lt;(\/?)(i|em|b)&gt;/gi, '<$1$2>');
+}
+
 function renderResults(records){
   const resultsEl = document.getElementById('results');
   const metaEl = document.getElementById('resultMeta');
@@ -242,18 +252,21 @@ function renderResults(records){
   resultsEl.innerHTML = records.map((r, i) => {
     const presenceClass = 'p-' + (r.presence_call || 'not_assessed');
     const taxRank = [r.kingdom, r.phylum, r.class, r.order_rank, r.family, r.genus].filter(Boolean).join(' \u203a ') || 'Taxonomy not matched';
-    const citationParts = [r.reference_authors, r.reference_year ? '(' + r.reference_year + ')' : '', r.reference_title].filter(Boolean);
-    const citationText = citationParts.length ? citationParts.join(' ') : (r.reference_citation || '');
+    // Authors+year bolded, title left plain (with any embedded italics preserved) — easier to scan.
+    const authorsYear = [r.reference_authors, r.reference_year ? '(' + r.reference_year + ')' : ''].filter(Boolean).join(' ');
+    const citationHtml = (authorsYear || r.reference_title)
+      ? [authorsYear ? '<b>' + safeInlineHtml(authorsYear) + '</b>' : '', r.reference_title ? safeInlineHtml(r.reference_title) : ''].filter(Boolean).join(' ')
+      : safeInlineHtml(r.reference_citation || '');
 
     // Link priority: resolved DOI first, then a manually-supplied paper link, then plain text.
     let citationLink;
     if (r.doi){
       const bareDoi = r.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '');
-      citationLink = '<a href="https://doi.org/' + encodeURIComponent(bareDoi) + '" target="_blank" rel="noopener">' + escapeHtml(citationText) + '</a>';
+      citationLink = '<a href="https://doi.org/' + encodeURIComponent(bareDoi) + '" target="_blank" rel="noopener">' + citationHtml + '</a>';
     } else if (r.paper_link){
-      citationLink = '<a href="' + escapeHtml(r.paper_link) + '" target="_blank" rel="noopener">' + escapeHtml(citationText) + '</a>';
+      citationLink = '<a href="' + escapeHtml(r.paper_link) + '" target="_blank" rel="noopener">' + citationHtml + '</a>';
     } else {
-      citationLink = escapeHtml(citationText);
+      citationLink = citationHtml;
     }
 
     const rows = [];

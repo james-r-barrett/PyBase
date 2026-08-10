@@ -64,6 +64,9 @@
   .sitenav a{ color:var(--ink-soft); text-decoration:none; padding-bottom:3px; border-bottom:2px solid transparent; }
   .sitenav a:hover{ color:var(--moss-deep); }
   .sitenav a.active{ color:var(--moss-deep); border-bottom-color:var(--moss-deep); }
+  .sitenav a.nav-submit{ color:var(--ochre); }
+  .sitenav a.nav-submit:hover{ color:var(--ochre); }
+  .sitenav a.nav-submit.active{ color:var(--ochre); border-bottom-color:var(--ochre); }
 
   header{ margin-bottom: 36px; position:relative; }
   #themeToggle{
@@ -156,11 +159,10 @@
 
   <nav class="sitenav">
     <a href="./" class="active">Home</a>
-    <a href="submit/">Submit</a>
+    <a href="submit/" class="nav-submit">Submit</a>
     <a href="browse/">Browse</a>
     <a href="todo/">To-do</a>
     <a href="guide/">Guide</a>
-    <a href="wizard/">Guided</a>
   </nav>
 
   <header>
@@ -180,7 +182,7 @@
   <div class="cards">
     <a class="card-link" href="submit/">
       <div class="card-title">Submit a record</div>
-      <div class="card-desc">Log a species-level observation from a paper you've read — presence/absence, ultrastructure, and the source.</div>
+      <div class="card-desc">Log a species-level observation from a paper you've read — presence/absence, ultrastructure, and the source. Choose a quick form or a step-by-step guided version.</div>
     </a>
     <a class="card-link" href="browse/">
       <div class="card-title">Browse the data</div>

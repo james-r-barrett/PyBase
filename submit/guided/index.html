@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pyrenoid Evolution Database — Guided Submission</title>
-<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -31,6 +31,9 @@
   }
   .sitenav a{ color:var(--ink-soft); text-decoration:none; padding-bottom:3px; border-bottom:2px solid transparent; }
   .sitenav a.active{ color:var(--moss-deep); border-bottom-color:var(--moss-deep); }
+  .sitenav a.nav-submit{ color:var(--ochre); }
+  .sitenav a.nav-submit:hover{ color:var(--ochre); }
+  .sitenav a.nav-submit.active{ color:var(--ochre); border-bottom-color:var(--ochre); }
   header{ margin-bottom: 18px; position:relative; }
   #themeToggle{
     position:absolute; top:0; right:0; background:var(--paper-raised); border:1px solid var(--line);
@@ -124,18 +127,17 @@
 <div class="wrap">
 
   <nav class="sitenav">
-    <a href="../">Home</a>
-    <a href="../submit/">Submit</a>
-    <a href="../browse/">Browse</a>
-    <a href="../todo/">To-do</a>
-    <a href="../guide/">Guide</a>
-    <a href="../wizard/" class="active">Guided</a>
+    <a href="../../">Home</a>
+    <a href="../" class="nav-submit active">Submit</a>
+    <a href="../../browse/">Browse</a>
+    <a href="../../todo/">To-do</a>
+    <a href="../../guide/">Guide</a>
   </nav>
 
   <header>
     <button type="button" id="themeToggle" aria-label="Toggle dark mode">🌙</button>
     <h1>Guided submission</h1>
-    <p class="sub">Same record, same database as the standard form — click through instead of using dropdowns. Experimental: <a href="../submit/" style="color:var(--moss-deep);">the original form</a> is still there if you prefer it.</p>
+    <p class="sub">Same record, same database as the standard form — click through instead of using dropdowns. Experimental: <a href="../form/" style="color:var(--moss-deep);">the original form</a> is still there if you prefer it.</p>
   </header>
 
   <div class="trail" id="trail"></div>

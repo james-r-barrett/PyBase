@@ -32,6 +32,9 @@
   .sitenav a{ color:var(--ink-soft); text-decoration:none; padding-bottom:3px; border-bottom:2px solid transparent; }
   .sitenav a:hover{ color:var(--moss-deep); }
   .sitenav a.active{ color:var(--moss-deep); border-bottom-color:var(--moss-deep); }
+  .sitenav a.nav-submit{ color:var(--ochre); }
+  .sitenav a.nav-submit:hover{ color:var(--ochre); }
+  .sitenav a.nav-submit.active{ color:var(--ochre); border-bottom-color:var(--ochre); }
 
   header{ margin-bottom: 20px; position:relative; }
   #themeToggle{
@@ -100,11 +103,10 @@
 
   <nav class="sitenav">
     <a href="../">Home</a>
-    <a href="../submit/">Submit</a>
+    <a href="../submit/" class="nav-submit">Submit</a>
     <a href="../browse/">Browse</a>
     <a href="../todo/">To-do</a>
     <a href="../guide/" class="active">Guide</a>
-    <a href="../wizard/">Guided</a>
   </nav>
 
   <header>

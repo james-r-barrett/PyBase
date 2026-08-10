@@ -54,6 +54,9 @@
   .sitenav a{ color:var(--ink-soft); text-decoration:none; padding-bottom:3px; border-bottom:2px solid transparent; }
   .sitenav a:hover{ color:var(--moss-deep); }
   .sitenav a.active{ color:var(--moss-deep); border-bottom-color:var(--moss-deep); }
+  .sitenav a.nav-submit{ color:var(--ochre); }
+  .sitenav a.nav-submit:hover{ color:var(--ochre); }
+  .sitenav a.nav-submit.active{ color:var(--ochre); border-bottom-color:var(--ochre); }
 
   header{ margin-bottom: 28px; position:relative; }
   #themeToggle{
@@ -71,7 +74,7 @@
     font-family: 'Fraunces', serif; font-weight: 600; font-size: 32px;
     margin: 0 0 8px; color: var(--moss-deep); letter-spacing: -0.01em;
   }
-  .sub{ color: var(--ink-soft); font-size: 15px; max-width: 62ch; }
+  .sub{ color: var(--ink-soft); font-size: 15px; }
 
   #resultMeta{
     font-family:'IBM Plex Mono', monospace; font-size: 12px; color: var(--ink-soft); margin: 20px 0 14px;
@@ -95,20 +98,24 @@
   .item-notes{
     font-family:'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--ochre); margin-top: 6px;
   }
-  .item-action, .item-flag, .item-restore{
-    font-family:'IBM Plex Mono', monospace; font-size: 12px; text-transform:uppercase; letter-spacing:0.03em;
-    padding: 9px 16px; border-radius: var(--radius); white-space:nowrap; text-align:center;
-    text-decoration:none; cursor:pointer; border: 1px solid transparent; box-sizing:border-box;
+  .log-btn, .item-flag, .item-restore{
+    font-family:'IBM Plex Mono', monospace; font-size: 11px; text-transform:uppercase; letter-spacing:0.03em;
+    padding: 6px 12px; border-radius: 20px; white-space:nowrap; text-align:center;
+    text-decoration:none; cursor:pointer; border: 1px solid var(--line); box-sizing:border-box;
+    background: var(--surface);
   }
-  .item-action{ background: var(--moss-deep); color: #fff; border-color: var(--moss-deep); }
-  .item-action:hover{ background: var(--moss); border-color: var(--moss); }
-  .item-action.secondary{ background: transparent; color: var(--moss-deep); border-color: var(--line); }
-  .item-action.secondary:hover{ background: var(--paper); border-color: var(--moss); }
-  .item-actions{ display:flex; flex-direction:column; gap:8px; align-items:stretch; min-width: 200px; }
-  .item-actions-row{ display:flex; gap:8px; }
-  .item-actions-row .item-action{ flex:1; }
-  .item-flag{ background: transparent; color: var(--ink-soft); border-color: var(--line); }
+  .log-btn{ color: var(--ochre); border-color: var(--ochre); }
+  .log-btn:hover{ background: var(--ochre); color: #fff; }
+  .log-group{ display:flex; align-items:center; gap:6px; }
+  .log-label{
+    font-family:'IBM Plex Mono', monospace; font-size: 10.5px; text-transform:uppercase; letter-spacing:0.04em;
+    color: var(--ink-soft); margin-right:2px;
+  }
+  .item-actions{ display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
+  .item-flag{ color: var(--ink-soft); }
   .item-flag:hover{ background: var(--paper); color: var(--danger); border-color: var(--danger); }
+  .item-restore{ color: var(--moss-deep); }
+  .item-restore:hover{ background: var(--paper); border-color: var(--moss); }
 
   .empty{ font-family:'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--ink-soft); padding: 30px 0; text-align:center; }
 
@@ -130,11 +137,10 @@
 
   <nav class="sitenav">
     <a href="../">Home</a>
-    <a href="../submit/">Submit</a>
+    <a href="../submit/" class="nav-submit">Submit</a>
     <a href="../browse/">Browse</a>
     <a href="../todo/" class="active">To-do</a>
     <a href="../guide/">Guide</a>
-    <a href="../wizard/">Guided</a>
   </nav>
 
   <header>
@@ -148,17 +154,17 @@
       Pyrenoid Evolution Database — To-do
     </div>
     <h1>Papers still to review</h1>
-    <p class="sub">Candidate references — some found automatically, some seeded manually. Nothing here is deleted — flagged and completed items stay browsable in their own tabs.</p>
+    <p class="sub">Candidate references — some found automatically, some seeded manually. Nothing here is deleted — items marked not relevant and completed items stay browsable in their own tabs.</p>
     <p class="sub" style="background:var(--paper-raised); border:1px dashed var(--line); border-radius:var(--radius); padding:12px 16px; margin-top:14px;"><b>Most references here were added automatically</b> by a literature scan and haven't been checked by a person — the title alone doesn't tell you whether the paper actually contains a usable pyrenoid image or observation. Open it, and if it turns out not to be relevant, flag it so it stops resurfacing.</p>
   </header>
 
   <div class="tabs" style="display:flex; gap:8px; margin-top:24px; flex-wrap:wrap;">
     <button type="button" class="tab-btn active" data-status="to_review">To-do</button>
-    <button type="button" class="tab-btn" data-status="not_relevant">Flagged</button>
+    <button type="button" class="tab-btn" data-status="not_relevant">Not relevant</button>
     <button type="button" class="tab-btn" data-status="covered">Completed</button>
   </div>
 
-  <div class="controls" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-top:16px;">
+  <div class="controls" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-top:16px; margin-bottom:20px;">
     <div id="resultMeta" style="margin:0;"></div>
     <select id="sortSelect" style="font-family:'IBM Plex Mono', monospace; font-size:12.5px; padding:8px 10px; border:1px solid var(--line); border-radius:var(--radius); background:var(--surface); color:var(--ink);">
       <option value="year_asc">Publication year — oldest first</option>
@@ -193,6 +199,22 @@ function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
+// Escapes everything, then re-opens a tiny allowlist of formatting tags (Europe PMC / OpenAlex /
+// CrossRef titles often embed <i>/<em> around taxonomic names) — safe because only these exact
+// escaped sequences get un-escaped, nothing else can smuggle in real markup.
+function safeInlineHtml(str){
+  return escapeHtml(str).replace(/&lt;(\/?)(i|em|b)&gt;/gi, '<$1$2>');
+}
+
+// Scan-added citations are a single "Authors (Year). Title. Journal." string — split off the
+// authors+year so they can be bolded, leaving the title (and any embedded italics) plain.
+function formatCitationHtml(citation){
+  const str = citation || '';
+  const m = str.match(/^(.*?\(\d{4}[a-z]?\)\.)\s*([\s\S]*)$/);
+  if (!m) return safeInlineHtml(str);
+  return '<b>' + safeInlineHtml(m[1]) + '</b> ' + safeInlineHtml(m[2]);
+}
+
 let allItems = [];
 let currentStatus = 'to_review';
 
@@ -213,7 +235,7 @@ function sortItems(items, mode){
 
 const STATUS_LABELS = {
   to_review: { noun: 'paper still to review', plural: 'papers still to review', empty: 'Nothing outstanding right now — check back later.' },
-  not_relevant: { noun: 'flagged item', plural: 'flagged items', empty: 'Nothing has been flagged as not relevant.' },
+  not_relevant: { noun: 'item marked not relevant', plural: 'items marked not relevant', empty: 'Nothing has been marked not relevant.' },
   covered: { noun: 'completed item', plural: 'completed items', empty: 'Nothing marked complete yet.' },
 };
 
@@ -221,7 +243,7 @@ function updateTabCounts(){
   document.querySelectorAll('.tab-btn').forEach(btn => {
     const status = btn.getAttribute('data-status');
     const count = allItems.filter(i => i.status === status).length;
-    const label = { to_review: 'To-do', not_relevant: 'Flagged', covered: 'Completed' }[status];
+    const label = { to_review: 'To-do', not_relevant: 'Not relevant', covered: 'Completed' }[status];
     btn.textContent = `${label} (${count})`;
   });
 }
@@ -246,15 +268,16 @@ function renderItems(items){
 
   resultsEl.innerHTML = items.map(item => {
     const bareDoi = item.doi ? item.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '') : '';
-    const doiLink = bareDoi ? '<a href="https://doi.org/' + encodeURIComponent(bareDoi) + '" target="_blank" rel="noopener">' + escapeHtml(item.citation) + '</a>' : escapeHtml(item.citation);
-    const submitHref = bareDoi ? '../submit/?doi=' + encodeURIComponent(bareDoi) : '../submit/';
-    const wizardHref = bareDoi ? '../wizard/?doi=' + encodeURIComponent(bareDoi) : '../wizard/';
+    const doiLink = bareDoi ? '<a href="https://doi.org/' + encodeURIComponent(bareDoi) + '" target="_blank" rel="noopener">' + formatCitationHtml(item.citation) + '</a>' : formatCitationHtml(item.citation);
+    const submitHref = bareDoi ? '../submit/form/?doi=' + encodeURIComponent(bareDoi) : '../submit/form/';
+    const wizardHref = bareDoi ? '../submit/guided/?doi=' + encodeURIComponent(bareDoi) : '../submit/guided/';
     const yearBadge = item.pub_year ? '<span style="font-family:\'IBM Plex Mono\', monospace; font-size:11px; color:var(--ink-soft); margin-right:8px;">' + item.pub_year + '</span>' : '';
 
     const logRow = `
-      <div class="item-actions-row">
-        <a class="item-action" href="${submitHref}">Log this one (form)</a>
-        <a class="item-action secondary" href="${wizardHref}">Log this one (guided)</a>
+      <div class="log-group">
+        <span class="log-label">Log:</span>
+        <a class="log-btn" href="${submitHref}">Form</a>
+        <a class="log-btn" href="${wizardHref}">Guided</a>
       </div>
     `;
 
@@ -316,7 +339,7 @@ document.getElementById('results').addEventListener('click', async (e) => {
 
   if (flagBtn){
     const id = flagBtn.getAttribute('data-flag-id');
-    if (!confirm('Mark this reference as not relevant? It moves to the Flagged tab — nothing is deleted.')) return;
+    if (!confirm('Mark this reference as not relevant? It moves to the Not relevant tab — nothing is deleted.')) return;
     flagBtn.disabled = true;
     flagBtn.textContent = 'Flagging…';
     try {

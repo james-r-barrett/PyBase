@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pyrenoid Record Submission</title>
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --paper: #F1ECDD;
+    --paper-raised: #F8F4E9;
+    --ink: #16241C;
+    --ink-soft: #4B5A50;
+    --moss: #3E6350;
+    --moss-deep: #1F3D2E;
+    --ochre: #A97A22;
+    --line: #C9C0A6;
+    --danger: #8C3B2E;
+    --surface: #FFFFFF;
+    --radius: 3px;
+  }
+  body.dark-mode{
+    --paper: #16211C;
+    --paper-raised: #1D2A22;
+    --ink: #EAE6D7;
+    --ink-soft: #9FAEA3;
+    --moss: #6FA184;
+    --moss-deep: #9FCBAE;
+    --ochre: #E0B15E;
+    --line: #34423A;
+    --danger: #E08669;
+    --surface: #22302A;
+  }
+  body{ transition: background 0.15s, color 0.15s; }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', serif;
+    padding: 48px 20px 80px;
+    line-height: 1.5;
+  }
+  .wrap{ max-width: 720px; margin: 0 auto; }
+
+  /* header / specimen-label motif */
+  header{ margin-bottom: 40px; }
+  .eyebrow{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--moss);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom: 10px;
+  }
+  .eyebrow::after{ content:""; flex:1; height:1px; background: var(--line); }
+  h1{
+    font-family: 'Fraunces', serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-size: 34px;
+    margin: 0 0 8px;
+    color: var(--moss-deep);
+    letter-spacing: -0.01em;
+  }
+  .sub{
+    color: var(--ink-soft);
+    font-size: 15.5px;
+  }
+  .mark{ width: 34px; height: 34px; flex-shrink:0; }
+
+  /* card */
+  .card{
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 32px 32px 8px;
+    box-shadow: 0 1px 0 rgba(31,61,46,0.04);
+  }
+  fieldset{
+    border: none;
+    padding: 0 0 26px;
+    margin: 0 0 26px;
+    border-bottom: 1px solid var(--line);
+  }
+  fieldset:last-of-type{ border-bottom: none; }
+  legend{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    padding: 0;
+    margin-bottom: 16px;
+  }
+  .row{ display:grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+  .row:last-child{ margin-bottom: 0; }
+  .row.single{ grid-template-columns: 1fr; }
+  .field{ margin-bottom: 16px; }
+  .field:last-child{ margin-bottom: 0; }
+  label{
+    display:block;
+    font-size: 13px;
+    line-height: 1.35;
+    color: var(--ink-soft);
+    margin-bottom: 5px;
+    min-height: 2.7em;
+  }
+  label .hint{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    color: #9a9280;
+    margin-left: 6px;
+  }
+  label .req{ color: var(--danger); }
+  input[type=text], input[type=email], input[type=url], input[type=number], select, textarea{
+    width: 100%;
+    box-sizing: border-box;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13.5px;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 9px 10px;
+  }
+  input:focus, select:focus, textarea:focus{
+    outline: 2px solid var(--moss);
+    outline-offset: 1px;
+    border-color: var(--moss);
+  }
+  textarea{ resize: vertical; min-height: 64px; font-family: 'Source Serif 4', serif; font-size: 14px; }
+  select{ appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%), linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%); background-position: calc(100% - 16px) center, calc(100% - 11px) center; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; }
+  .checkgrid{ display:flex; flex-wrap:wrap; gap: 8px; }
+  .chip{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 6px 12px;
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--ink-soft);
+    user-select: none;
+  }
+  .chip input{ display:none; }
+  .chip.active{ background: var(--moss-deep); border-color: var(--moss-deep); color: #fff; }
+
+  .actions{ padding: 22px 0 6px; display:flex; align-items:center; gap: 14px; }
+  button{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    background: var(--moss-deep);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 12px 22px;
+    cursor: pointer;
+  }
+  button:hover{ background: var(--moss); }
+  button:disabled{ background: #a8b0a9; cursor: default; }
+  .status{ font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--ink-soft); }
+  .status.ok{ color: var(--moss); }
+  .status.err{ color: var(--danger); }
+
+  /* log */
+  .logsection{ margin-top: 56px; }
+  .logsection h2{
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--moss-deep);
+    margin: 0 0 4px;
+  }
+  .logsection .sub{ font-size: 13.5px; margin-bottom: 18px; }
+  .entry{
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+  .entry-top{ display:flex; justify-content: space-between; align-items:baseline; gap: 12px; margin-bottom: 8px; }
+  .entry-species{ font-family:'Fraunces', serif; font-style: italic; font-size: 16px; color: var(--ink); }
+  .entry-presence{ font-family:'IBM Plex Mono', monospace; font-size: 10.5px; text-transform:uppercase; letter-spacing:0.06em; padding: 3px 8px; border-radius: 20px; }
+  .p-present{ background:#DCE7DC; color:var(--moss-deep); }
+  .p-absent{ background:#EDE0DC; color:var(--danger); }
+  .p-equivocal, .p-not_assessed{ background:#EDE7D3; color:var(--ochre); }
+  .entry pre{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+  }
+  .empty{ font-family:'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--ink-soft); padding: 18px 0; }
+
+  #pasteBox{
+    border: 1.5px dashed var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  #pasteBox:hover, #pasteBox:focus{ border-color: var(--moss); background: #FBFAF3; outline: none; }
+  #pasteBoxEmpty{ font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--ink-soft); }
+  #pastePreview{ max-width: 100%; max-height: 220px; border-radius: var(--radius); display: block; }
+
+  .toolbar{ display:flex; justify-content: space-between; align-items:center; margin-bottom: 12px; gap: 10px; flex-wrap: wrap; }
+  .toolbar button.ghost{
+    background: transparent; color: var(--moss-deep); border: 1px solid var(--line); text-transform:none; letter-spacing:0; padding: 7px 12px; font-size: 12px;
+  }
+  .toolbar button.ghost:hover{ background: var(--surface); }
+
+  @media (max-width: 620px){
+    .row{ grid-template-columns: 1fr; }
+    .card{ padding: 24px 18px 6px; }
+  }
+
+  .sitenav{
+    display:flex; gap:18px; margin-bottom:28px;
+    font-family:'IBM Plex Mono', monospace; font-size:12px;
+    letter-spacing:0.05em; text-transform:uppercase;
+  }
+  .sitenav a{ color:var(--ink-soft); text-decoration:none; padding-bottom:3px; border-bottom:2px solid transparent; }
+  .sitenav a:hover{ color:var(--moss-deep); }
+  .sitenav a.active{ color:var(--moss-deep); border-bottom-color:var(--moss-deep); }
+  .sitenav a.nav-submit{ color:var(--ochre); }
+  .sitenav a.nav-submit:hover{ color:var(--ochre); }
+  .sitenav a.nav-submit.active{ color:var(--ochre); border-bottom-color:var(--ochre); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="sitenav">
+    <a href="../../">Home</a>
+    <a href="../" class="nav-submit active">Submit</a>
+    <a href="../../browse/">Browse</a>
+    <a href="../../todo/">To-do</a>
+    <a href="../../guide/">Guide</a>
+  </nav>
+
+  <header style="position:relative;">
+    <button type="button" id="themeToggle" aria-label="Toggle dark mode" style="position:absolute; top:0; right:0; background:var(--paper-raised); border:1px solid var(--line); border-radius:20px; padding:6px 12px; font-size:13px; cursor:pointer; font-family:'IBM Plex Mono', monospace; color:var(--ink-soft);">🌙</button>
+    <div class="eyebrow">
+      <svg class="mark" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="17" cy="17" r="15.5" stroke="#3E6350" stroke-width="1"/>
+        <circle cx="17" cy="17" r="10.5" stroke="#3E6350" stroke-width="1" stroke-dasharray="2 2"/>
+        <circle cx="17" cy="17" r="5" fill="#A97A22" opacity="0.85"/>
+      </svg>
+      Pyrenoid Evolution Database — Intake
+    </div>
+    <h1>Submit a pyrenoid record</h1>
+    <p class="sub">Log a species-level observation from the literature: presence or absence of a pyrenoid, ultrastructural detail where reported, and the source it comes from. Submissions are reviewed before they enter the curated dataset. Prefer clicking through one question at a time? Try the <a href="../guided/" style="color:var(--moss-deep);">guided version</a>.</p>
+    <p class="sub" style="background:var(--paper-raised); border:1px dashed var(--line); border-radius:var(--radius); padding:12px 16px; margin-top:14px;"><b>Classify what the image actually shows, not what you'd expect from the species.</b> Imaging artefacts, growth-condition effects, and mis-speciation in older literature are real, but should be corrected post-hoc rather than guessed around at entry time.</p>
+  </header>
+
+  <form class="card" id="form">
+
+    <fieldset>
+      <legend>Submitted by</legend>
+      <div class="row">
+        <div class="field">
+          <label for="submitter_name">Name</label>
+          <input type="text" id="submitter_name" required>
+        </div>
+        <div class="field">
+          <label for="submitter_email">Email <span class="hint">for follow-up questions</span></label>
+          <input type="email" id="submitter_email" required>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Taxonomy</legend>
+      <div class="row">
+        <div class="field">
+          <label for="species_name">Species (binomial) <span class="req">*</span></label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="species_name" placeholder="e.g. Chlamydomonas reinhardtii" required style="flex:1;">
+            <button type="button" id="taxonomyLookupBtn" class="ghost" style="background:transparent; color:var(--moss-deep); border:1px solid var(--line); text-transform:none; letter-spacing:0; padding:9px 14px; font-size:12.5px; border-radius:var(--radius); cursor:pointer; white-space:nowrap;">Match</button>
+          </div>
+          <div id="taxonomyLookupStatus" style="font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ink-soft); margin-top:6px;"></div>
+        </div>
+        <div class="field">
+          <label for="strain">Strain / isolate <span class="hint">if reported</span></label>
+          <input type="text" id="strain" placeholder="e.g. CC-1690">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Source</legend>
+      <div class="row">
+        <div class="field">
+          <label for="doi">DOI <span class="hint">paste it here first, then look it up</span></label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="doi" placeholder="10.1073/pnas.1213498109 or a doi.org link" style="flex:1;">
+            <button type="button" id="doiLookupBtn" class="ghost" style="background:transparent; color:var(--moss-deep); border:1px solid var(--line); text-transform:none; letter-spacing:0; padding:9px 14px; font-size:12.5px; border-radius:var(--radius); cursor:pointer; white-space:nowrap;">Look up</button>
+          </div>
+          <div id="doiLookupStatus" style="font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ink-soft); margin-top:6px;"></div>
+        </div>
+        <div class="field">
+          <label for="reference_citation">Reference citation <span class="req">*</span> <span class="hint">fills in automatically from the DOI, or type it yourself</span></label>
+          <input type="text" id="reference_citation" placeholder="Author(s), year, journal" required>
+          <div id="duplicateWarning" style="font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ochre); margin-top:6px;"></div>
+        </div>
+      </div>
+      <div class="row single">
+        <div class="field">
+          <label for="paper_link">Link to the paper <span class="hint">if the DOI lookup didn't work, or there's no DOI — a journal page, PDF, or any working link</span></label>
+          <input type="url" id="paper_link" placeholder="https://…">
+        </div>
+      </div>
+      <div class="row single">
+        <div class="field">
+          <label style="display:flex; align-items:center; gap:8px; min-height:auto;">
+            <input type="checkbox" id="is_unpublished" style="width:auto;">
+            Unpublished result <span class="hint">tick if this is your own unpublished data, not from a formal paper</span>
+          </label>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Presence</legend>
+      <div class="row">
+        <div class="field">
+          <label for="presence_call">Presence <span class="req">*</span></label>
+          <select id="presence_call" required>
+            <option value="">Select…</option>
+            <option value="present">Present</option>
+            <option value="absent">Absent</option>
+            <option value="equivocal">Equivocal / disputed</option>
+            <option value="not_assessed">Not assessed in this source</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="method">Method of assessment</label>
+          <select id="method">
+            <option value="">Select…</option>
+            <option value="tem">Transmission EM</option>
+            <option value="light_microscopy">Light microscopy</option>
+            <option value="tomography">Electron tomography</option>
+            <option value="other">Other / not specified</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <div id="presentDetailWrap" style="display:none;">
+
+    <fieldset>
+      <legend>Chloroplast morphology</legend>
+      <div class="row">
+        <div class="field">
+          <label for="chloroplast_morphology">Chloroplast shape</label>
+          <select id="chloroplast_morphology">
+            <option value="">Not reported</option>
+            <option value="discoid">Discoid / lens-shaped</option>
+            <option value="stellate">Stellate</option>
+            <option value="cup_shaped">Cup-shaped</option>
+            <option value="two_lobed">Two-lobed (butterfly)</option>
+            <option value="lobed">Lobed</option>
+            <option value="cuboid">Cuboid (axial plate)</option>
+            <option value="reticulate">Reticulate (fenestrated)</option>
+            <option value="other">Other <span style="font-weight:400;">(e.g. ring-shaped, ribbon-shaped/helical)</span></option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="pyrenoids_per_chloroplast">Pyrenoids per chloroplast</label>
+          <input type="number" id="pyrenoids_per_chloroplast" min="0" step="1" placeholder="e.g. 1">
+        </div>
+      </div>
+      <div class="field">
+        <label for="cell_type_context">Cell type <span class="hint">only if pyrenoid presence/form is cell-type specific — e.g. "gametes only"</span></label>
+        <input type="text" id="cell_type_context" placeholder="Leave blank unless relevant">
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Intraplastid pyrenoid location</legend>
+      <div class="row single">
+        <div class="field">
+          <label for="pyrenoid_class">Location</label>
+          <select id="pyrenoid_class">
+            <option value="">Not reported</option>
+            <option value="central">Central</option>
+            <option value="stalked">Stalked <span style="font-weight:400;">(narrow constriction at the chloroplast)</span></option>
+            <option value="bulged">Bulged <span style="font-weight:400;">(wide-based, no constriction)</span></option>
+            <option value="junctional">Junctional <span style="font-weight:400;">(between lobes — e.g. butterfly/stellate chloroplasts)</span></option>
+            <option value="transverse">Transverse <span style="font-weight:400;">(centred lengthwise, but spans the full width — touches the envelope on both sides)</span></option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="field" id="pyrenoidClassOtherWrap" style="display:none;">
+          <label for="pyrenoid_class_other">Specify</label>
+          <input type="text" id="pyrenoid_class_other" placeholder="e.g. reticulate">
+        </div>
+      </div>
+      <div class="row" id="positionWrap" style="display:none;">
+        <div class="field">
+          <label for="position_type">Position on the chloroplast</label>
+          <select id="position_type">
+            <option value="">Not reported</option>
+            <option value="apical">Apical (end of the chloroplast)</option>
+            <option value="lateral">Lateral (side of the chloroplast)</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Matrix shape</legend>
+      <div class="row">
+        <div class="field">
+          <label for="matrix_shape">Shape</label>
+          <select id="matrix_shape">
+            <option value="">Not reported</option>
+            <option value="spherical">Spherical / pseudo-spherical</option>
+            <option value="lenticular">Lenticular <span style="font-weight:400;">(elongated — longer in one direction, unlike spherical)</span></option>
+            <option value="lobed">Lobed <span style="font-weight:400;">(one matrix, multiple rounded lobes)</span></option>
+            <option value="multinucleate">Multinucleate <span style="font-weight:400;">(individual separate blobs, not just transected)</span></option>
+            <option value="amorphous">Amorphous</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="matrix_diameter_um">Matrix diameter <span class="hint">µm, estimated from the image if possible</span></label>
+          <input type="number" id="matrix_diameter_um" min="0" step="0.1" placeholder="e.g. 2.5">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Ultrastructure <span class="hint" style="text-transform:none; letter-spacing:0;">(leave blank if not reported)</span></legend>
+
+      <div class="row">
+        <div class="field">
+          <label for="traversing_membranes">Traversing membranes</label>
+          <select id="traversing_membranes">
+            <option value="">Not reported</option>
+            <option value="present">Present</option>
+            <option value="absent">Absent</option>
+            <option value="unclear">Unclear</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" id="traversingMembraneDetail" style="display:none;">
+        <div class="field">
+          <label for="membrane_type">Type</label>
+          <select id="membrane_type">
+            <option value="">Not reported</option>
+            <option value="sheet">Sheets</option>
+            <option value="fenestrated">Fenestrated</option>
+            <option value="curved">Curved <span style="font-weight:400;">(e.g. Porphyridium)</span></option>
+            <option value="invaginated">Invaginated</option>
+            <option value="proximal">Proximal <span style="font-weight:400;">(close to entering, perpendicular approach — e.g. stalked/bulged)</span></option>
+          </select>
+        </div>
+        <div class="field" id="continuousWithThylakoidsWrap" style="display:none;">
+          <label for="continuous_with_thylakoids">Continuous with external thylakoids?</label>
+          <select id="continuous_with_thylakoids">
+            <option value="">Not reported</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+            <option value="unclear">Unclear</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" id="traversalExtentDetail" style="display:none;">
+        <div class="field">
+          <label for="traversal_extent">Extent</label>
+          <select id="traversal_extent">
+            <option value="">Not reported</option>
+            <option value="complete">Complete <span style="font-weight:400;">(spans the whole matrix)</span></option>
+            <option value="partial">Partial <span style="font-weight:400;">(enters from the edge, doesn't reach the other side)</span></option>
+            <option value="discontinuous">Discontinuous</option>
+            <option value="unclear">Unclear</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="traversal_count">Number of traversions <span class="hint">count them directly</span></label>
+          <input type="text" id="traversal_count" placeholder="e.g. 3">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="carbohydrate_present">Carbohydrate barrier present? <span class="hint">starch — also called capping vesicle / pyrenoid sac / pyrenoid cap in older TEMs</span></label>
+          <select id="carbohydrate_present">
+            <option value="">Not reported</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+            <option value="unclear">Unclear</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" id="carbohydrateDetail" style="display:none;">
+        <div class="field">
+          <label for="starch_location">Location</label>
+          <select id="starch_location">
+            <option value="">Not reported</option>
+            <option value="chloroplastic">Chloroplastic</option>
+            <option value="extra_chloroplastic">Extra-chloroplastic (cytosolic)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="starch_count">Number of granules / plates <span class="hint">count them directly</span></label>
+          <input type="text" id="starch_count" placeholder="e.g. 2">
+        </div>
+      </div>
+      <div class="row" id="carbohydrateDetail2" style="display:none;">
+        <div class="field">
+          <label for="starch_morphology">Morphology</label>
+          <select id="starch_morphology">
+            <option value="">Not reported</option>
+            <option value="plate">Plate <span style="font-weight:400;">(continuous, often hugging the matrix periphery)</span></option>
+            <option value="granule">Granule <span style="font-weight:400;">(adjacent, more amorphous)</span></option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="starch_coverage">Coverage of matrix surface</label>
+          <select id="starch_coverage">
+            <option value="">Not reported</option>
+            <option value="complete">Complete</option>
+            <option value="partial">Partial <span style="font-weight:400;">(e.g. capping vesicle — can't fully encase an extra-chloroplastic matrix)</span></option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="shell_present">Shell present? <span class="hint">thin protein layer — often hard to observe. See Shimakawa et al. (2024) Cell</span></label>
+          <select id="shell_present">
+            <option value="">Not reported</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+            <option value="unclear">Unclear</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="membrane_barrier_present">Surrounding membrane present? <span class="hint">a membrane closely surrounding or touching the matrix — includes thylakoids running close/appressed to it</span></label>
+          <select id="membrane_barrier_present">
+            <option value="">Not reported</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+            <option value="unclear">Unclear</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" id="membraneBarrierDetail" style="display:none;">
+        <div class="field">
+          <label for="barrier_membrane_subtype">Membrane origin</label>
+          <select id="barrier_membrane_subtype">
+            <option value="">Not reported</option>
+            <option value="thylakoid">Thylakoid</option>
+            <option value="envelope">Envelope</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="field" id="barrierMembraneSubtypeOtherWrap" style="display:none;">
+          <label for="barrier_membrane_subtype_other">Specify</label>
+          <input type="text" id="barrier_membrane_subtype_other" placeholder="e.g. ER-derived">
+        </div>
+        <div class="field">
+          <label for="barrier_membrane_morphology">Morphology</label>
+          <select id="barrier_membrane_morphology">
+            <option value="">Not reported</option>
+            <option value="appressed">Appressed</option>
+            <option value="curved">Curved</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="plastoglobuli">Plastoglobuli</label>
+          <select id="plastoglobuli">
+            <option value="">Not reported</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+        <div class="field" id="plastoglobuliLocationWrap" style="display:none;">
+          <label for="plastoglobuli_location">Location</label>
+          <input type="text" id="plastoglobuli_location" placeholder="e.g. peripheral to the pyrenoid matrix">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="nucleomorph_present">Nucleomorph</label>
+          <select id="nucleomorph_present">
+            <option value="">Not reported</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+        <div class="field" id="nucleomorphLocationWrap" style="display:none;">
+          <label for="nucleomorph_location">Location</label>
+          <input type="text" id="nucleomorph_location" placeholder="e.g. adjacent to the pyrenoid">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="ultrastructure_notes">Other ultrastructural notes</label>
+        <textarea id="ultrastructure_notes" placeholder="Anything about the ultrastructure that doesn't fit the fields above"></textarea>
+      </div>
+    </fieldset>
+
+    </div>
+
+    <fieldset>
+      <legend>Image</legend>
+      <div class="field">
+        <label>Screenshot of the figure <span class="hint">click the box, then paste (Ctrl+V / Cmd+V) — or click to browse a file. Max 5 MB.</span></label>
+        <div id="pasteBox" tabindex="0">
+          <span id="pasteBoxEmpty">Click here, then paste an image (Ctrl+V / Cmd+V)<br><button type="button" id="browseBtn" style="margin-top:8px; background:transparent; color:var(--moss-deep); border:1px solid var(--line); text-transform:none; letter-spacing:0; padding:6px 12px; font-size:12px; border-radius:var(--radius); cursor:pointer;">Choose file instead</button></span>
+          <img id="pastePreview" style="display:none;">
+        </div>
+        <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
+        <div id="pasteStatus" class="hint" style="display:block; margin-top:6px;"></div>
+        <button type="button" id="clearImageBtn" class="ghost" style="display:none; margin-top:8px; background:transparent; color:var(--danger); border:1px solid var(--line); text-transform:none; letter-spacing:0; padding:6px 12px; font-size:12px; border-radius:var(--radius); cursor:pointer;">Remove image</button>
+      </div>
+      <div class="field">
+        <label for="image_url">Or a link to the figure <span class="hint">if you'd rather not upload — page/figure number or a URL</span></label>
+        <input type="text" id="image_url" placeholder="e.g. Fig. 3B, or a URL">
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Notes</legend>
+      <div class="field">
+        <textarea id="notes" placeholder="Growth conditions, disagreement with other sources, anything that doesn't fit above…"></textarea>
+      </div>
+    </fieldset>
+
+    <div class="actions">
+      <button type="submit" id="submitBtn">Submit record</button>
+      <span class="status" id="statusMsg"></span>
+    </div>
+  </form>
+
+  <div class="logsection" id="thanksPanel" style="display:none;">
+    <div class="entry">
+      <div class="entry-top">
+        <span class="entry-species">Thank you</span>
+      </div>
+      <p class="sub" style="margin-bottom:0;">Your record has been logged for review. It isn't visible here or to other submitters — a curator will check it before it's added to the dataset.</p>
+    </div>
+  </div>
+
+  <footer style="margin-top:56px; padding-top:28px; border-top:1px solid var(--line);">
+    <p class="sub">This project exists to bring together the pyrenoid literature of the last fifty years — presence, absence, and ultrastructure scattered across decades of electron microscopy papers — into one place, tied to phylogeny, so we can start asking when and how often pyrenoids evolved across the algae.</p>
+    <p class="sub">Records are reviewed before joining the curated dataset. Access to the full backend can be requested by contacting <a href="mailto:james.barrett@york.ac.uk" style="color:var(--moss-deep);">james.barrett@york.ac.uk</a>.</p>
+    <p class="sub" id="entryCount" style="font-family:'IBM Plex Mono', monospace; font-size:12px;"></p>
+  </footer>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://iplxcpyzefjbtnfacejd.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_7XGJfoPFKERlr6KzHWELtA_oG0WcHDn';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+const themeToggle = document.getElementById('themeToggle');
+function applyTheme(dark){
+  document.body.classList.toggle('dark-mode', dark);
+  themeToggle.textContent = dark ? '☀️' : '🌙';
+}
+let isDark = false; // default to light mode regardless of system preference
+applyTheme(isDark);
+themeToggle.addEventListener('click', () => {
+  isDark = !isDark;
+  applyTheme(isDark);
+});
+
+async function loadEntryCount(){
+  const el = document.getElementById('entryCount');
+  try {
+    const { data, error } = await supabaseClient.rpc('get_submission_counts_by_division');
+    if (error) throw error;
+    if (!data || data.length === 0){
+      el.textContent = 'No records submitted yet.';
+      return;
+    }
+    const total = data.reduce((sum, row) => sum + Number(row.entry_count), 0);
+    const breakdown = data.map(row => row.division + ': ' + row.entry_count).join('  \u00b7  ');
+    el.textContent = total + (total === 1 ? ' record submitted so far — ' : ' records submitted so far — ') + breakdown;
+  } catch(err){
+    el.textContent = '';
+  }
+}
+loadEntryCount();
+
+let referenceMeta = { title: '', authors: '', year: null, journal: '' };
+
+function extractBareDoi(raw){
+  return raw.trim().replace(/^https?:\/\/(dx\.)?doi\.org\//i, '').replace(/^doi:/i, '').trim();
+}
+
+function formatAuthors(authorList){
+  if (!Array.isArray(authorList) || authorList.length === 0) return '';
+  const names = authorList.map(a => [a.given, a.family].filter(Boolean).join(' ').trim()).filter(Boolean);
+  if (names.length <= 3) return names.join(', ');
+  return names[0] + ' et al.';
+}
+
+function extractYear(msg){
+  const parts = (msg['published-print'] || msg['published-online'] || msg['published'] || msg.created || {})['date-parts'];
+  return (parts && parts[0] && parts[0][0]) ? parts[0][0] : null;
+}
+
+async function lookupDoi(){
+  const doiStatus = document.getElementById('doiLookupStatus');
+  const rawDoi = fieldVal('doi');
+  if (!rawDoi){
+    doiStatus.textContent = 'Paste a DOI first.';
+    return;
+  }
+  const bareDoi = extractBareDoi(rawDoi);
+  doiStatus.textContent = 'Looking up…';
+  try {
+    const res = await fetch('https://api.crossref.org/works/' + encodeURIComponent(bareDoi));
+    if (!res.ok) throw new Error('DOI not found (' + res.status + ')');
+    const data = await res.json();
+    const msg = data.message || {};
+    const title = (msg.title && msg.title[0]) || '';
+    const journal = (msg['container-title'] && msg['container-title'][0]) || '';
+    const authors = formatAuthors(msg.author);
+    const year = extractYear(msg);
+
+    referenceMeta = { title, authors, year, journal };
+
+    const citationParts = [authors, year ? '(' + year + ')' : '', title, journal].filter(Boolean);
+    document.getElementById('reference_citation').value = citationParts.join('. ').replace(/\.\./g, '.');
+    doiStatus.textContent = 'Matched: ' + (title || 'reference found') + (journal ? ' — ' + journal : '');
+  } catch(err){
+    referenceMeta = { title: '', authors: '', year: null, journal: '' };
+    doiStatus.textContent = 'Could not resolve that DOI — fill in the citation manually.';
+  }
+}
+
+document.getElementById('doiLookupBtn').addEventListener('click', lookupDoi);
+
+// Remembered from a previous submission on this device, if any — saves re-typing for repeat submitters.
+try {
+  const savedName = localStorage.getItem('pybase_submitter_name');
+  const savedEmail = localStorage.getItem('pybase_submitter_email');
+  if (savedName) document.getElementById('submitter_name').value = savedName;
+  if (savedEmail) document.getElementById('submitter_email').value = savedEmail;
+} catch(storageErr){ /* private browsing or storage disabled — form just starts blank */ }
+
+// Arrived from the to-do list with a specific paper in mind — prefill and look it up automatically.
+const urlParams = new URLSearchParams(window.location.search);
+const prefillDoi = urlParams.get('doi');
+if (prefillDoi){
+  document.getElementById('doi').value = prefillDoi;
+  lookupDoi();
+}
+document.getElementById('doi').addEventListener('input', () => {
+  referenceMeta = { title: '', authors: '', year: null, journal: '' };
+  document.getElementById('doiLookupStatus').textContent = '';
+});
+
+let taxonomyMeta = { kingdom: '', phylum: '', class_: '', order_rank: '', family: '', genus: '', gbif_key: null, match_type: '' };
+
+async function matchTaxonomy(){
+  const taxStatus = document.getElementById('taxonomyLookupStatus');
+  const name = fieldVal('species_name');
+  if (!name){
+    taxStatus.textContent = 'Enter a species name first.';
+    return;
+  }
+  taxStatus.textContent = 'Matching…';
+  try {
+    const res = await fetch('https://api.gbif.org/v1/species/match?name=' + encodeURIComponent(name));
+    if (!res.ok) throw new Error('GBIF request failed (' + res.status + ')');
+    const data = await res.json();
+    if (!data.matchType || data.matchType === 'NONE'){
+      taxonomyMeta = { kingdom: '', phylum: '', class_: '', order_rank: '', family: '', genus: '', gbif_key: null, match_type: 'NONE' };
+      taxStatus.textContent = 'No match found in GBIF — check the spelling, or leave for a curator to resolve.';
+      return;
+    }
+    taxonomyMeta = {
+      kingdom: data.kingdom || '',
+      phylum: data.phylum || '',
+      class_: data.class || '',
+      order_rank: data.order || '',
+      family: data.family || '',
+      genus: data.genus || '',
+      gbif_key: data.usageKey || null,
+      match_type: data.matchType || ''
+    };
+    const rankSummary = [taxonomyMeta.phylum, taxonomyMeta.class_, taxonomyMeta.family].filter(Boolean).join(' \u203a ');
+    const flag = data.matchType === 'EXACT' ? '' : '  (⚠ ' + data.matchType + ' match — worth a curator check)';
+    taxStatus.textContent = 'Matched: ' + rankSummary + flag;
+  } catch(err){
+    taxonomyMeta = { kingdom: '', phylum: '', class_: '', order_rank: '', family: '', genus: '', gbif_key: null, match_type: '' };
+    taxStatus.textContent = 'Could not reach GBIF — a curator can match this manually.';
+  }
+}
+
+document.getElementById('taxonomyLookupBtn').addEventListener('click', matchTaxonomy);
+document.getElementById('species_name').addEventListener('input', () => {
+  taxonomyMeta = { kingdom: '', phylum: '', class_: '', order_rank: '', family: '', genus: '', gbif_key: null, match_type: '' };
+  document.getElementById('taxonomyLookupStatus').textContent = '';
+});
+
+document.getElementById('presence_call').addEventListener('change', (e) => {
+  document.getElementById('presentDetailWrap').style.display = (e.target.value === 'present') ? '' : 'none';
+});
+
+async function checkForDuplicate(){
+  const warnEl = document.getElementById('duplicateWarning');
+  const species = fieldVal('species_name');
+  const doi = fieldVal('doi');
+  const citation = fieldVal('reference_citation');
+  if (!species || (!doi && !citation)){
+    warnEl.textContent = '';
+    return;
+  }
+  try {
+    const { data, error } = await supabaseClient.rpc('check_possible_duplicate', {
+      p_species: species, p_doi: doi || null, p_reference: citation || null
+    });
+    if (error) throw error;
+    warnEl.textContent = (data && data > 0)
+      ? '\u26a0 This species + reference combination looks like it may already be logged. Still fine to submit if this is a separate observation (e.g. a different figure).'
+      : '';
+  } catch(err){
+    warnEl.textContent = '';
+  }
+}
+document.getElementById('species_name').addEventListener('blur', checkForDuplicate);
+document.getElementById('doi').addEventListener('blur', checkForDuplicate);
+document.getElementById('reference_citation').addEventListener('blur', checkForDuplicate);
+
+document.getElementById('pyrenoid_class').addEventListener('change', (e) => {
+  document.getElementById('pyrenoidClassOtherWrap').style.display = (e.target.value === 'other') ? '' : 'none';
+  document.getElementById('positionWrap').style.display = (e.target.value === 'stalked' || e.target.value === 'bulged') ? '' : 'none';
+});
+
+document.getElementById('traversing_membranes').addEventListener('change', (e) => {
+  const show = e.target.value === 'present';
+  document.getElementById('traversingMembraneDetail').style.display = show ? '' : 'none';
+  document.getElementById('traversalExtentDetail').style.display = show ? '' : 'none';
+  if (!show){
+    document.getElementById('membrane_type').value = '';
+    document.getElementById('continuousWithThylakoidsWrap').style.display = 'none';
+  }
+});
+
+document.getElementById('membrane_type').addEventListener('change', (e) => {
+  // Continuity with external thylakoids only makes sense for sheets, tubulated, or curved —
+  // not for invaginations, which by definition aren't continuous with the thylakoid network.
+  const askContinuity = ['sheet', 'fenestrated', 'curved'].includes(e.target.value);
+  document.getElementById('continuousWithThylakoidsWrap').style.display = askContinuity ? '' : 'none';
+});
+
+document.getElementById('carbohydrate_present').addEventListener('change', (e) => {
+  const show = e.target.value === 'yes';
+  document.getElementById('carbohydrateDetail').style.display = show ? '' : 'none';
+  document.getElementById('carbohydrateDetail2').style.display = show ? '' : 'none';
+});
+
+document.getElementById('membrane_barrier_present').addEventListener('change', (e) => {
+  document.getElementById('membraneBarrierDetail').style.display = (e.target.value === 'yes') ? '' : 'none';
+});
+
+document.getElementById('barrier_membrane_subtype').addEventListener('change', (e) => {
+  document.getElementById('barrierMembraneSubtypeOtherWrap').style.display = (e.target.value === 'other') ? '' : 'none';
+});
+
+document.getElementById('plastoglobuli').addEventListener('change', (e) => {
+  document.getElementById('plastoglobuliLocationWrap').style.display = (e.target.value === 'yes') ? '' : 'none';
+});
+
+document.getElementById('nucleomorph_present').addEventListener('change', (e) => {
+  document.getElementById('nucleomorphLocationWrap').style.display = (e.target.value === 'yes') ? '' : 'none';
+});
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB — matches the Supabase bucket's own limit
+let pastedImageBlob = null;
+
+const pasteBox = document.getElementById('pasteBox');
+const pasteBoxEmpty = document.getElementById('pasteBoxEmpty');
+const pastePreview = document.getElementById('pastePreview');
+const pasteStatus = document.getElementById('pasteStatus');
+const fileInput = document.getElementById('fileInput');
+const clearImageBtn = document.getElementById('clearImageBtn');
+
+function humanSize(bytes){
+  return (bytes / (1024*1024)).toFixed(1) + ' MB';
+}
+
+function acceptImageFile(file){
+  if (!file) return;
+  if (!file.type || !file.type.startsWith('image/')){
+    pasteStatus.textContent = 'That doesn\u2019t look like an image file.';
+    return;
+  }
+  if (file.size > MAX_IMAGE_BYTES){
+    pasteStatus.textContent = 'Too large (' + humanSize(file.size) + ') — 5 MB max. Try a tighter crop or a lower-resolution screenshot.';
+    return;
+  }
+  pastedImageBlob = file;
+  pastePreview.src = URL.createObjectURL(file);
+  pastePreview.style.display = 'block';
+  pasteBoxEmpty.style.display = 'none';
+  clearImageBtn.style.display = 'inline-block';
+  pasteStatus.textContent = 'Ready to upload (' + humanSize(file.size) + ') — attached when you submit.';
+}
+
+pasteBox.addEventListener('paste', (e) => {
+  const items = (e.clipboardData || window.clipboardData).items;
+  for (const item of items){
+    if (item.type.startsWith('image/')){
+      acceptImageFile(item.getAsFile());
+      e.preventDefault();
+      return;
+    }
+  }
+  pasteStatus.textContent = 'No image found on the clipboard.';
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files && fileInput.files[0]) acceptImageFile(fileInput.files[0]);
+});
+document.getElementById('browseBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  fileInput.click();
+});
+clearImageBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  pastedImageBlob = null;
+  pastePreview.src = '';
+  pastePreview.style.display = 'none';
+  pasteBoxEmpty.style.display = 'block';
+  clearImageBtn.style.display = 'none';
+  pasteStatus.textContent = '';
+  fileInput.value = '';
+});
+
+function resetImageBox(){
+  pastedImageBlob = null;
+  pastePreview.src = '';
+  pastePreview.style.display = 'none';
+  pasteBoxEmpty.style.display = 'block';
+  clearImageBtn.style.display = 'none';
+  pasteStatus.textContent = '';
+  fileInput.value = '';
+}
+
+const form = document.getElementById('form');
+const statusMsg = document.getElementById('statusMsg');
+const submitBtn = document.getElementById('submitBtn');
+const thanksPanel = document.getElementById('thanksPanel');
+
+function setStatus(msg, cls){
+  statusMsg.textContent = msg;
+  statusMsg.className = 'status' + (cls ? ' ' + cls : '');
+}
+
+function fieldVal(id){
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  submitBtn.disabled = true;
+  setStatus('Submitting…');
+  thanksPanel.style.display = 'none';
+
+  const record = {
+    submitter_name: fieldVal('submitter_name'),
+    submitter_email: fieldVal('submitter_email'),
+    species_name: fieldVal('species_name'),
+    strain: fieldVal('strain'),
+    reference_citation: fieldVal('reference_citation'),
+    paper_link: fieldVal('paper_link'),
+    doi: fieldVal('doi'),
+    presence_call: fieldVal('presence_call'),
+    method: fieldVal('method'),
+    is_unpublished: document.getElementById('is_unpublished').checked,
+    chloroplast_morphology: fieldVal('chloroplast_morphology'),
+    pyrenoids_per_chloroplast: fieldVal('pyrenoids_per_chloroplast') || null,
+    cell_type_context: fieldVal('cell_type_context'),
+    pyrenoid_class: fieldVal('pyrenoid_class'),
+    pyrenoid_class_other: fieldVal('pyrenoid_class_other'),
+    position_type: fieldVal('position_type'),
+    matrix_shape: fieldVal('matrix_shape'),
+    matrix_diameter_um: fieldVal('matrix_diameter_um') || null,
+    traversing_membranes: fieldVal('traversing_membranes'),
+    continuous_with_thylakoids: fieldVal('continuous_with_thylakoids'),
+    membrane_type: fieldVal('membrane_type'),
+    traversal_extent: fieldVal('traversal_extent'),
+    traversal_count: fieldVal('traversal_count'),
+    carbohydrate_present: fieldVal('carbohydrate_present'),
+    starch_location: fieldVal('starch_location'),
+    starch_count: fieldVal('starch_count'),
+    starch_morphology: fieldVal('starch_morphology'),
+    starch_coverage: fieldVal('starch_coverage'),
+    shell_present: fieldVal('shell_present'),
+    membrane_barrier_present: fieldVal('membrane_barrier_present'),
+    barrier_membrane_subtype: fieldVal('barrier_membrane_subtype'),
+    barrier_membrane_subtype_other: fieldVal('barrier_membrane_subtype_other'),
+    barrier_membrane_morphology: fieldVal('barrier_membrane_morphology'),
+    plastoglobuli: fieldVal('plastoglobuli'),
+    plastoglobuli_location: fieldVal('plastoglobuli_location'),
+    nucleomorph_present: fieldVal('nucleomorph_present'),
+    nucleomorph_location: fieldVal('nucleomorph_location'),
+    ultrastructure_notes: fieldVal('ultrastructure_notes'),
+    image_url: fieldVal('image_url'),
+    notes: fieldVal('notes'),
+    reference_title: referenceMeta.title || null,
+    reference_authors: referenceMeta.authors || null,
+    reference_year: referenceMeta.year || null,
+    reference_journal: referenceMeta.journal || null,
+    kingdom: taxonomyMeta.kingdom || null,
+    phylum: taxonomyMeta.phylum || null,
+    class: taxonomyMeta.class_ || null,
+    order_rank: taxonomyMeta.order_rank || null,
+    family: taxonomyMeta.family || null,
+    genus: taxonomyMeta.genus || null,
+    gbif_key: taxonomyMeta.gbif_key || null,
+    taxonomy_match_type: taxonomyMeta.match_type || null
+  };
+
+  if (!record.species_name || !record.reference_citation || !record.presence_call || !record.submitter_email){
+    setStatus('Please fill in the required fields.', 'err');
+    submitBtn.disabled = false;
+    return;
+  }
+
+  if (pastedImageBlob){
+    setStatus('Uploading image…');
+    const ext = (pastedImageBlob.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
+    const path = 'submissions/' + Date.now() + '-' + Math.random().toString(36).slice(2,8) + '.' + ext;
+    const { error: uploadError } = await supabaseClient.storage
+      .from('pyrenoid-images')
+      .upload(path, pastedImageBlob, { contentType: pastedImageBlob.type });
+    if (uploadError){
+      setStatus('Image upload failed (' + uploadError.message + ') — try again or remove the image.', 'err');
+      submitBtn.disabled = false;
+      return;
+    }
+    record.image_path = path;
+  } else {
+    record.image_path = null;
+  }
+
+  setStatus('Submitting…');
+  try {
+    const { error } = await supabaseClient.from('submissions').insert([record]);
+    if (error) throw error;
+    setStatus('Submitted. Thank you.', 'ok');
+    const rememberedName = record.submitter_name;
+    const rememberedEmail = record.submitter_email;
+    try {
+      localStorage.setItem('pybase_submitter_name', rememberedName);
+      localStorage.setItem('pybase_submitter_email', rememberedEmail);
+    } catch(storageErr){ /* private browsing or storage disabled — not worth failing the submission over */ }
+    form.reset();
+    document.getElementById('submitter_name').value = rememberedName;
+    document.getElementById('submitter_email').value = rememberedEmail;
+    referenceMeta = { title: '', authors: '', year: null, journal: '' };
+    document.getElementById('doiLookupStatus').textContent = '';
+    taxonomyMeta = { kingdom: '', phylum: '', class_: '', order_rank: '', family: '', genus: '', gbif_key: null, match_type: '' };
+    document.getElementById('taxonomyLookupStatus').textContent = '';
+    resetImageBox();
+    document.getElementById('duplicateWarning').textContent = '';
+    thanksPanel.style.display = 'block';
+    loadEntryCount();
+  } catch(err){
+    setStatus('Could not save this submission (' + (err.message || String(err)) + ')', 'err');
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
