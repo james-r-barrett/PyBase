@@ -121,7 +121,7 @@
   </header>
 
   <div class="disclaimer">
-    <b>Classify what the image actually shows, not what you'd expect from the species.</b> Imaging artefacts, growth-condition effects, and mis-speciation in older literature are real, but should be corrected post-hoc rather than guessed around at entry time. The diagrams below are original schematics, not reproductions of any published figure — illustrative, not a real specimen. This is a working draft: expect it to keep changing as edge cases turn up.
+    <b>Classify what the image actually shows, not what you'd expect from the species.</b> Imaging artefacts, growth-condition effects, and mis-speciation in older literature will exist, but should be corrected post-hoc. The diagrams below are schematic, guided by real TEM observations, but will inevitably not cover all possibilities. This is a working draft: expect it to keep changing as edge cases turn up, and please feedback!.
   </div>
 
   <div class="toc">
@@ -137,7 +137,7 @@
   <!-- ============ 01: CHLOROPLAST MORPHOLOGY ============ -->
   <section id="chloroplast">
     <div class="section-head"><span class="section-num">01</span><h2>Chloroplast morphology</h2></div>
-    <p class="section-note">The shape of the chloroplast itself, independent of the pyrenoid — worth calling before anything pyrenoid-specific, since it sets context for what "central" or "bulged" even means in that cell.</p>
+    <p class="section-note">The shape of the chloroplast itself, independent of the pyrenoid. Sets the context for what "central" or "bulged" means and is often useful as a taxonomic marker too.</p>
 
     <div class="card-grid">
       <div class="example-card">
@@ -218,8 +218,7 @@
       #chloroplast .example-card svg{ width:auto; height:130px; max-width:100%; margin:0 auto; display:block; }
     </style>
 
-    <div class="subnote"><b>Pyrenoids per chloroplast:</b> a plain count — most unicellular algae have one, but note how many are visible if more.</div>
-    <div class="subnote"><b>Edge cases not separately coded:</b> a stellate chloroplast sharing one pyrenoid across its lobes via a shared cap, or multiple chloroplasts sharing one extra-chloroplastic cap — rare enough to describe in the notes field rather than force into a dropdown.</div>
+    <div class="subnote"><b>Pyrenoids per chloroplast:</b> most unicellular algae have one, but note how many are visible if more.</div>
     <div class="subnote"><b>Cell type:</b> only fill in if presence or form is cell-type specific (e.g. "gametes only") — leave blank otherwise.</div>
   </section>
 
@@ -344,7 +343,7 @@
           <g transform="matrix(2.3428,-0.9179,0.9179,2.3428,-299.3737,-315.6020)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g>
         </svg>
         <div class="example-title">Spherical / pseudo-spherical</div>
-        <div class="example-desc">Broadly rounded — includes matrices that appear slightly misshapen only due to a stalked constriction.</div>
+        <div class="example-desc">Broadly rounded — includes matrices that appear slightly misshapen only due to constriction or other seemingly transient effect.</div>
       </div>
       <div class="example-card">
         <svg viewBox="0 0 124 192">
@@ -378,7 +377,7 @@
           <g transform="matrix(1.0000,0.0000,0.0000,1.0000,-635.0485,-667.4590)"><path d="M674.792,722.438C674.792,722.438 662.35,736.511 666.243,748.164C670.137,759.817 673.13,754.412 680.33,762.357C687.53,770.301 685.599,767.754 683.968,774.339C682.337,780.925 679.123,785.83 668.911,786.714C658.699,787.597 659.833,783.857 656.85,788.124C653.868,792.392 657.083,802.277 666.559,806.144C676.035,810.011 671.535,815.896 688.383,809.459C705.231,803.021 711.405,799.727 718.402,801.859C725.399,803.992 733.524,804.314 735.808,794.867C738.091,785.42 738.611,785.43 732.818,778.661C727.026,771.892 708.103,768.94 711.47,762.728C714.838,756.515 713.072,758.194 716.151,748.164C719.23,738.134 719.579,739.751 715.83,733.028C712.08,726.305 702.67,724.835 703.414,718.189C704.158,711.544 694.144,716.27 688.98,714.084C683.817,711.898 674.792,722.438 674.792,722.438Z" style="fill:var(--ochre);"/></g>
         </svg>
         <div class="example-title">Amorphous</div>
-        <div class="example-desc">Continuous but not spherical and not clearly lobed.</div>
+        <div class="example-desc">Continuous but not spherical and not clearly lobed. More commonly associated with stalked pyrenoids</div>
       </div>
       <div class="example-card">
         <svg viewBox="0 0 140 120">
@@ -399,7 +398,7 @@
   <!-- ============ 04: TRAVERSING MEMBRANES ============ -->
   <section id="traversing">
     <div class="section-head"><span class="section-num">04</span><h2>Traversing membranes</h2></div>
-    <p class="section-note">Whether membranes penetrate through the matrix itself, or approach it closely — the core call for the whole classification scheme. First: present/absent/unclear on the form; if present, these five shapes describe how.</p>
+    <p class="section-note">Whether membranes penetrate through the matrix itself, or approach it closely. First: present/absent/unclear on the form; if present, these five shapes describe common categories.</p>
 
     <div class="card-grid">
       <div class="example-card">
@@ -459,15 +458,15 @@
     <style>
       #traversing .example-card svg{ width:auto; height:130px; max-width:100%; margin:0 auto; display:block; }
     </style>
-    <div class="subnote"><b>Continuous with external thylakoid network?</b> Only asked for sheets, fenestrated, or curved — not invaginations or proximal approaches, which by definition aren't continuous with the network.</div>
+    <div class="subnote"><b>Continuous with external thylakoid network?</b> Only asked for sheets, fenestrated, or curved — not invaginations or proximal approaches, which by definition aren't continuous with the network as they are invaginations of the encasing membranes (e.g. chloroplast envolope).</div>
     <div class="subnote"><b>Extent:</b> complete (spans the whole matrix, usual for sheets/curved), partial (enters from the edge, doesn't reach the other side — usual for fenestrations), or discontinuous.</div>
-    <div class="subnote"><b>Number of traversions:</b> a free-text count — just count them directly (e.g. Porphyridium's curved traversions, or multiple sheets as in P. bulbiculosus).</div>
+    <div class="subnote"><b>Number of traversions:</b> count the number of individual traversions (e.g. Porphyridium's curved traversions, or multiple sheets as in P. bulbiculosus).</div>
   </section>
 
   <!-- ============ 05: SURROUNDING FEATURE ============ -->
   <section id="barrier">
     <div class="section-head"><span class="section-num">05</span><h2>Surrounding feature</h2></div>
-    <p class="section-note">Three independent yes/no/unclear questions, not mutually exclusive — a pyrenoid could plausibly have more than one of these at once. “Surrounding membrane” also covers what used to be a separate “thylakoid appression” question — they were redundant, so now it’s one call.</p>
+    <p class="section-note">Three independent yes/no/unclear questions, not mutually exclusive — a pyrenoid could plausibly have more than one of these at once.</p>
 
     <h3>Carbohydrate barrier</h3>
     <div class="card-grid" style="max-width:220px;">
@@ -506,7 +505,7 @@
       </div>
     </div>
 
-    <div class="subnote"><b>Number of granules/plates:</b> a free-text count — just count them directly, visible as concentric layers above.</div>
+    <div class="subnote"><b>Number of granules/plates:</b>count number of plates/granules.</div>
     <div class="subnote"><b>Morphology:</b></div>
     <div class="card-grid" style="max-width:460px; margin-top:8px;">
       <div class="example-card">
@@ -546,7 +545,7 @@
           <g transform="matrix(-0.68998,0.72383,0.72383,0.68998,-479.25,-1388.7)"><path d="M678.956,1357.16C678.956,1357.16 680.481,1361.27 682.221,1363.64C683.844,1365.85 686.113,1367.71 689.788,1369.94C697.403,1374.56 719.575,1404.9 723.514,1432.96C723.514,1432.96 725.185,1441.9 724.619,1449.41C724.053,1456.91 720.355,1457.31 724.002,1471.55" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g>
         </svg>
         <div class="example-title">Present</div>
-        <div class="example-desc">Thin protein layer — often hard to observe; don’t force a call if it’s genuinely not resolvable.</div>
+        <div class="example-desc">Thin protein layer — often hard to observe. Only designate if it’s clearly visible.</div>
       </div>
     </div>
     <div class="further">Reference: Shimakawa et al. (2024) Cell.</div>
