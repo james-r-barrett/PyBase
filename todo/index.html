@@ -95,18 +95,19 @@
   .item-notes{
     font-family:'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--ochre); margin-top: 6px;
   }
-  .item-action{
-    background: var(--moss-deep); color: #fff; text-decoration:none;
+  .item-action, .item-flag, .item-restore{
     font-family:'IBM Plex Mono', monospace; font-size: 12px; text-transform:uppercase; letter-spacing:0.03em;
-    padding: 9px 16px; border-radius: var(--radius); white-space:nowrap; align-self:center;
+    padding: 9px 16px; border-radius: var(--radius); white-space:nowrap; text-align:center;
+    text-decoration:none; cursor:pointer; border: 1px solid transparent; box-sizing:border-box;
   }
-  .item-action:hover{ background: var(--moss); }
-  .item-actions{ display:flex; flex-direction:column; gap:8px; align-items:stretch; }
-  .item-flag{
-    background: transparent; color: var(--ink-soft); border: 1px solid var(--line);
-    font-family:'IBM Plex Mono', monospace; font-size: 11.5px; text-transform:uppercase; letter-spacing:0.03em;
-    padding: 7px 14px; border-radius: var(--radius); white-space:nowrap; cursor:pointer;
-  }
+  .item-action{ background: var(--moss-deep); color: #fff; border-color: var(--moss-deep); }
+  .item-action:hover{ background: var(--moss); border-color: var(--moss); }
+  .item-action.secondary{ background: transparent; color: var(--moss-deep); border-color: var(--line); }
+  .item-action.secondary:hover{ background: var(--paper); border-color: var(--moss); }
+  .item-actions{ display:flex; flex-direction:column; gap:8px; align-items:stretch; min-width: 200px; }
+  .item-actions-row{ display:flex; gap:8px; }
+  .item-actions-row .item-action{ flex:1; }
+  .item-flag{ background: transparent; color: var(--ink-soft); border-color: var(--line); }
   .item-flag:hover{ background: var(--paper); color: var(--danger); border-color: var(--danger); }
 
   .empty{ font-family:'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--ink-soft); padding: 30px 0; text-align:center; }
@@ -119,11 +120,7 @@
   .tab-btn.active{ background: var(--moss-deep); color: #fff; border-color: var(--moss-deep); }
   .tab-btn:hover:not(.active){ border-color: var(--moss); color: var(--moss-deep); }
 
-  .item-restore{
-    background: transparent; color: var(--moss-deep); border: 1px solid var(--line);
-    font-family:'IBM Plex Mono', monospace; font-size: 11.5px; text-transform:uppercase; letter-spacing:0.03em;
-    padding: 7px 14px; border-radius: var(--radius); white-space:nowrap; cursor:pointer;
-  }
+  .item-restore{ background: transparent; color: var(--moss-deep); border-color: var(--line); }
   .item-restore:hover{ background: var(--paper); border-color: var(--moss); }
   footer{ margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); }
 </style>
@@ -152,6 +149,7 @@
     </div>
     <h1>Papers still to review</h1>
     <p class="sub">Candidate references — some found automatically, some seeded manually. Nothing here is deleted — flagged and completed items stay browsable in their own tabs.</p>
+    <p class="sub" style="background:var(--paper-raised); border:1px dashed var(--line); border-radius:var(--radius); padding:12px 16px; margin-top:14px;"><b>Most references here were added automatically</b> by a literature scan and haven't been checked by a person — the title alone doesn't tell you whether the paper actually contains a usable pyrenoid image or observation. Open it, and if it turns out not to be relevant, flag it so it stops resurfacing.</p>
   </header>
 
   <div class="tabs" style="display:flex; gap:8px; margin-top:24px; flex-wrap:wrap;">
@@ -253,19 +251,18 @@ function renderItems(items){
     const wizardHref = bareDoi ? '../wizard/?doi=' + encodeURIComponent(bareDoi) : '../wizard/';
     const yearBadge = item.pub_year ? '<span style="font-family:\'IBM Plex Mono\', monospace; font-size:11px; color:var(--ink-soft); margin-right:8px;">' + item.pub_year + '</span>' : '';
 
+    const logRow = `
+      <div class="item-actions-row">
+        <a class="item-action" href="${submitHref}">Log this one (form)</a>
+        <a class="item-action secondary" href="${wizardHref}">Log this one (guided)</a>
+      </div>
+    `;
+
     let actions = '';
     if (item.status === 'to_review'){
-      actions = `
-        <a class="item-action" href="${submitHref}">Log this one</a>
-        <a class="item-action" href="${wizardHref}" style="background:transparent; color:var(--moss-deep); border:1px solid var(--line);">Log this one (guided)</a>
-        <button type="button" class="item-flag" data-flag-id="${escapeHtml(item.id)}">Not relevant</button>
-      `;
+      actions = logRow + `<button type="button" class="item-flag" data-flag-id="${escapeHtml(item.id)}">Not relevant</button>`;
     } else if (item.status === 'not_relevant'){
-      actions = `
-        <a class="item-action" href="${submitHref}">Log this one</a>
-        <a class="item-action" href="${wizardHref}" style="background:transparent; color:var(--moss-deep); border:1px solid var(--line);">Log this one (guided)</a>
-        <button type="button" class="item-restore" data-restore-id="${escapeHtml(item.id)}">Restore to to-do</button>
-      `;
+      actions = logRow + `<button type="button" class="item-restore" data-restore-id="${escapeHtml(item.id)}">Restore to to-do</button>`;
     }
     // 'covered' items get no action buttons — they're done.
 
