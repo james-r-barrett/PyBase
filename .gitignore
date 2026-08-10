@@ -2,3 +2,4 @@
 .idea/
 archive/
 images/
+supabase/migrations/20260810_trusted_submitters.sql
