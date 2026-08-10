@@ -296,20 +296,16 @@
           </div>
         </div>
 
-        <div class="field-row">
-          <div>
-            <label>Extent</label>
-            <div class="pill-group" data-field="traversal_extent">
-              <button type="button" class="pill" data-value="complete">Complete</button>
-              <button type="button" class="pill" data-value="partial">Partial</button>
-              <button type="button" class="pill" data-value="discontinuous">Discontinuous</button>
-              <button type="button" class="pill" data-value="unclear">Unclear</button>
-            </div>
-          </div>
-          <div>
-            <label for="traversal_count">Number of traversions</label>
-            <input type="text" id="traversal_count" placeholder="e.g. 3">
-          </div>
+        <div class="subfield-label">Extent</div>
+        <div class="card-grid" data-field="traversal_extent">
+          <div class="opt-card" data-value="complete"><svg viewBox="0 0 177 192"><g transform="matrix(3.41653,0,0,3.41653,-169.91,-605.282)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1,0,0,1,-1081.22,-1124.7)"><path d="M1221.12,1278.29C1221.12,1278.29 1151.97,1214.67 1121.24,1159.51" style="fill:none;stroke:var(--moss);stroke-width:8.33px;"/></g><g transform="matrix(1,0,0,1,-1091.64,-1120.18)"><path d="M1206.3,1281.36C1206.3,1281.36 1144.02,1186.94 1118.94,1167.16" style="fill:none;stroke:var(--moss);stroke-width:8.33px;"/></g><g transform="matrix(0.979772,0,0,1,-1049.33,-1133.22)"><path d="M1223.03,1270.29C1223.03,1270.29 1160.88,1234.01 1121.69,1163.24" style="fill:none;stroke:var(--moss);stroke-width:8.42px;"/></g></svg><div class="opt-title">Complete</div><div class="opt-desc">Spans the whole matrix</div></div>
+          <div class="opt-card" data-value="partial"><svg viewBox="0 0 177 192"><g transform="matrix(3.4165,0,0,3.4165,-179.12,-622.66)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1,0,0,1,-1090.43,-1142.08)"><path d="M1221.12,1278.29C1221.12,1278.29 1180.35,1240.55 1167.77,1225.03" style="fill:none;stroke:var(--moss);stroke-width:8.33px;"/></g><g transform="matrix(1,0,0,1,-1100.84,-1137.56)"><path d="M1206.3,1281.36C1206.3,1281.36 1180.35,1240.55 1167.77,1225.03" style="fill:none;stroke:var(--moss);stroke-width:8.33px;"/></g><g transform="matrix(0.979772,0,0,1,-1058.54,-1150.6)"><path d="M1223.03,1270.29C1223.03,1270.29 1180.26,1242.08 1167.67,1226.55" style="fill:none;stroke:var(--moss);stroke-width:8.42px;"/></g></svg><div class="opt-title">Partial</div><div class="opt-desc">Enters from the edge, doesn't reach the other side</div></div>
+          <div class="opt-card" data-value="discontinuous"><svg viewBox="0 0 177 192"><g transform="matrix(3.41653,0,0,3.41653,-169.91,-605.282)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1,0,0,1,-1081.22,-1124.7)"><path d="M1221.12,1278.29C1221.12,1278.29 1151.97,1214.67 1121.24,1159.51" style="fill:none;stroke:var(--moss);stroke-width:8.33px;"/></g><g transform="matrix(1,0,0,1,-1091.64,-1120.18)"><path d="M1206.3,1281.36C1206.3,1281.36 1144.02,1186.94 1118.94,1167.16" style="fill:none;stroke:var(--moss);stroke-width:8.33px;"/></g><g transform="matrix(0.979772,0,0,1,-1049.33,-1133.22)"><path d="M1223.03,1270.29C1223.03,1270.29 1160.88,1234.01 1121.69,1163.24" style="fill:none;stroke:var(--moss);stroke-width:8.42px;"/></g><g transform="matrix(1,0,0,1,-1263.81,-1670.79)"><path d="M1316.53,1766.38C1316.53,1766.38 1322.58,1745.75 1334.46,1746.95C1346.34,1748.15 1342.79,1750.99 1351.94,1742.73C1361.09,1734.47 1359.61,1740.56 1366.06,1754.33C1372.51,1768.11 1381.38,1769.21 1365.69,1770.98C1349.99,1772.74 1353.16,1769.72 1346.92,1777.39C1340.68,1785.06 1343.98,1792.1 1333.89,1790.21C1323.8,1788.33 1316.53,1766.38 1316.53,1766.38Z" style="fill:var(--ochre);"/></g></svg><div class="opt-title">Discontinuous</div><div class="opt-desc">Breaks partway rather than running continuously</div></div>
+          <div class="opt-card" data-value="unclear"><svg viewBox="0 0 140 120"><circle cx="70" cy="60" r="30" fill="none" stroke="var(--ink-soft)" stroke-width="2" stroke-dasharray="4 3"/><text x="70" y="65" font-family="IBM Plex Mono, monospace" font-size="14" fill="var(--ink-soft)" text-anchor="middle">?</text></svg><div class="opt-title">Unclear</div></div>
+        </div>
+        <div>
+          <label for="traversal_count">Number of traversions</label>
+          <input type="text" id="traversal_count" placeholder="e.g. 3">
         </div>
       </div>
     </div>
