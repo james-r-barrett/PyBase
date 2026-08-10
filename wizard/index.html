@@ -668,6 +668,14 @@ document.getElementById('doi').addEventListener('input', () => {
   document.getElementById('doiLookupStatus').textContent = '';
 });
 
+// Arrived from the to-do list with a specific paper in mind — prefill and look it up automatically.
+const urlParams = new URLSearchParams(window.location.search);
+const prefillDoi = urlParams.get('doi');
+if (prefillDoi){
+  document.getElementById('doi').value = prefillDoi;
+  lookupDoi();
+}
+
 // ---------- GBIF taxonomy match ----------
 let taxonomyMeta = { kingdom:'', phylum:'', class_:'', order_rank:'', family:'', genus:'', gbif_key:null, match_type:'' };
 async function matchTaxonomy(){

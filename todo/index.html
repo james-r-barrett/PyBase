@@ -250,17 +250,20 @@ function renderItems(items){
     const bareDoi = item.doi ? item.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '') : '';
     const doiLink = bareDoi ? '<a href="https://doi.org/' + encodeURIComponent(bareDoi) + '" target="_blank" rel="noopener">' + escapeHtml(item.citation) + '</a>' : escapeHtml(item.citation);
     const submitHref = bareDoi ? '../submit/?doi=' + encodeURIComponent(bareDoi) : '../submit/';
+    const wizardHref = bareDoi ? '../wizard/?doi=' + encodeURIComponent(bareDoi) : '../wizard/';
     const yearBadge = item.pub_year ? '<span style="font-family:\'IBM Plex Mono\', monospace; font-size:11px; color:var(--ink-soft); margin-right:8px;">' + item.pub_year + '</span>' : '';
 
     let actions = '';
     if (item.status === 'to_review'){
       actions = `
         <a class="item-action" href="${submitHref}">Log this one</a>
+        <a class="item-action" href="${wizardHref}" style="background:transparent; color:var(--moss-deep); border:1px solid var(--line);">Log this one (guided)</a>
         <button type="button" class="item-flag" data-flag-id="${escapeHtml(item.id)}">Not relevant</button>
       `;
     } else if (item.status === 'not_relevant'){
       actions = `
         <a class="item-action" href="${submitHref}">Log this one</a>
+        <a class="item-action" href="${wizardHref}" style="background:transparent; color:var(--moss-deep); border:1px solid var(--line);">Log this one (guided)</a>
         <button type="button" class="item-restore" data-restore-id="${escapeHtml(item.id)}">Restore to to-do</button>
       `;
     }
