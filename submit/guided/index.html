@@ -316,6 +316,7 @@
         <div class="opt-card" data-value="proximal"><svg viewBox="0 0 177 192"><g transform="matrix(3.4165,0,0,3.4165,-179.12,-622.66)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1,0,0,1,-1067.2,-1108.4)"><path d="M1205.83,1263.03C1205.83,1263.03 1180.35,1240.55 1167.77,1225.03" style="fill:none;stroke:var(--moss);stroke-width:8.33px;"/></g><g transform="matrix(1,0,0,1,-1077.6,-1103.9)"><path d="M1191.01,1266.1C1191.01,1266.1 1180.35,1240.55 1167.77,1225.03" style="fill:none;stroke:var(--moss);stroke-width:8.33px;"/></g><g transform="matrix(0.97977,0,0,1,-1035.3,-1116.9)"><path d="M1207.43,1255.04C1207.43,1255.04 1180.26,1242.08 1167.67,1226.55" style="fill:none;stroke:var(--moss);stroke-width:8.42px;"/></g></svg><div class="opt-title">Proximal</div></div>
         <div class="opt-card" data-value="peripheral"><svg viewBox="0 0 177 192"><g transform="matrix(3.88661,0,0,3.88661,-204.25,-701.783)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(2.7376,0,0,2.7376,-139.49,-3205.416)"><path d="M68.501,1193.44C70.755,1190.75 74.777,1185.93 86.238,1188.45C90.988,1189.5 95.82,1194.57 96.948,1197.93C99.208,1204.65 98.097,1208.38 96.457,1211.36" style="fill:none;stroke:var(--moss);stroke-width:2.93px;"/></g><g transform="matrix(2.7376,0,0,2.7376,-140.08,-3194.586)"><path d="M71.464,1191.4C73.719,1188.71 78.213,1185.38 86.582,1188.28C89.391,1189.25 91.779,1191.62 93.496,1195.59C95.815,1200.96 94.255,1204.81 94.255,1204.81" style="fill:none;stroke:var(--moss);stroke-width:2.93px;"/></g></svg><div class="opt-title">Peripheral</div><div class="opt-desc">Rare — enters only near the matrix edge. Distinct from a surrounding membrane, which never enters the matrix.</div></div>
         <div class="opt-card" data-value="naked"><svg viewBox="0 0 177 192"><g transform="matrix(3.41653,0,0,3.41653,-165.06,-601.545)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g></svg><div class="opt-title">Absent</div><div class="opt-desc">Naked, no traversing membrane</div></div>
+        <div class="opt-card" data-value="unclear"><svg viewBox="0 0 140 120"><circle cx="70" cy="60" r="30" fill="none" stroke="var(--ink-soft)" stroke-width="2" stroke-dasharray="4 3"/><text x="70" y="65" font-family="IBM Plex Mono, monospace" font-size="14" fill="var(--ink-soft)" text-anchor="middle">?</text></svg><div class="opt-title">Unclear</div></div>
       </div>
       <div class="hint-inline" style="display:block; color:var(--ochre); margin:-8px 0 16px;">"Peripheral" still crosses into the matrix, just near the edge — a surrounding membrane (later step) stays outside the matrix entirely. Only choose Peripheral when you can clearly see it crossing in.</div>
 
@@ -598,12 +599,13 @@ document.querySelectorAll('.card-grid[data-field]').forEach(grid => {
     const value = card.getAttribute('data-value');
     if (multi){
       const selected = new Set(Array.isArray(answers[field]) ? answers[field] : []);
-      // "Absent/naked" means no traversing membrane at all — exclusive of every other option.
-      if (value === 'naked'){
+      // "Absent/naked" and "Unclear" are exclusive of every other option — and each other.
+      const EXCLUSIVE_MULTI_VALUES = ['naked', 'unclear'];
+      if (EXCLUSIVE_MULTI_VALUES.includes(value)){
         selected.clear();
-        selected.add('naked');
+        selected.add(value);
       } else {
-        selected.delete('naked');
+        EXCLUSIVE_MULTI_VALUES.forEach(v => selected.delete(v));
         if (selected.has(value)) selected.delete(value); else selected.add(value);
       }
       grid.querySelectorAll('.opt-card').forEach(c => c.classList.toggle('selected', selected.has(c.getAttribute('data-value'))));
@@ -659,10 +661,10 @@ function handleFieldChange(field){
   }
   if (field === 'membrane_type'){
     const types = Array.isArray(answers.membrane_type) ? answers.membrane_type : (answers.membrane_type ? [answers.membrane_type] : []);
-    answers.traversing_membranes = types.length === 0 ? null : (types.includes('naked') ? 'absent' : 'present');
+    answers.traversing_membranes = types.length === 0 ? null : (types.includes('naked') ? 'absent' : (types.includes('unclear') ? 'unclear' : 'present'));
     document.getElementById('sub-continuity').style.display =
       types.some(t => ['sheet','fenestrated','curved'].includes(t)) ? '' : 'none';
-    showSub('sub-traversing-extent', types.length > 0 && !types.includes('naked'));
+    showSub('sub-traversing-extent', types.length > 0 && !types.includes('naked') && !types.includes('unclear'));
   }
   if (field === 'carbohydrate_present'){
     showSub('sub-carb', answers.carbohydrate_present === 'yes');
