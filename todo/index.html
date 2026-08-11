@@ -203,10 +203,11 @@ function escapeHtml(str){
 }
 
 // Escapes everything, then re-opens a tiny allowlist of formatting tags (Europe PMC / OpenAlex /
-// CrossRef titles often embed <i>/<em> around taxonomic names) — safe because only these exact
-// escaped sequences get un-escaped, nothing else can smuggle in real markup.
+// CrossRef titles often embed <i>/<em> around taxonomic names, and <sub>/<sup> around chemical
+// formulae or isotopes) — safe because only these exact escaped sequences get un-escaped, nothing
+// else can smuggle in real markup.
 function safeInlineHtml(str){
-  return escapeHtml(str).replace(/&lt;(\/?)(i|em|b)&gt;/gi, '<$1$2>');
+  return escapeHtml(str).replace(/&lt;(\/?)(i|em|b|sub|sup)&gt;/gi, '<$1$2>');
 }
 
 // Scan-added citations are a single "Authors (Year). Title. Journal." string — split off the
