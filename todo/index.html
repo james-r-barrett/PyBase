@@ -176,7 +176,7 @@
     </div>
     <h1>Papers still to review</h1>
     <p class="sub">Candidate references — some found automatically, some seeded manually. Nothing here is deleted — items marked not relevant and completed items stay browsable in their own tabs.</p>
-    <p class="sub" style="background:var(--paper-raised); border:1px dashed var(--line); border-radius:var(--radius); padding:12px 16px; margin-top:14px;"><b>Most references here were added automatically</b> by a literature scan and haven't been checked by a person — the title alone doesn't tell you whether the paper actually contains a usable pyrenoid image or observation. Open it, and if it turns out not to be relevant, flag it so it stops resurfacing.</p>
+    <p class="sub" style="background:var(--paper-raised); border:1px dashed var(--line); border-radius:var(--radius); padding:12px 16px; margin-top:14px;"><b>Most references here were added automatically</b> by a literature scan and haven't been checked by a person — the title alone doesn't tell you whether the paper actually contains a usable pyrenoid image or observation. If it turns out not to be relevant (i.e. no usable images or observations), flag it so it stops resurfacing. We should <b>also record species that clearly don't have pyrenoids too though, so don't mark those as not relevant, record them as entries with pyrenoid absent</b>. The in progress tab is for references that have multiple observations that have not yet been completed.</p>
   </header>
 
   <div class="tabs" style="display:flex; gap:8px; margin-top:24px; flex-wrap:wrap;">
@@ -189,10 +189,10 @@
   <div class="controls" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-top:16px; margin-bottom:20px;">
     <div id="resultMeta" style="margin:0;"></div>
     <select id="sortSelect">
-      <option value="added_desc">Date added — newest first</option>
-      <option value="added_asc">Date added — oldest first</option>
       <option value="year_desc">Publication year — newest first</option>
       <option value="year_asc">Publication year — oldest first</option>
+      <option value="added_desc">Date added — newest first</option>
+      <option value="added_asc">Date added — oldest first</option>
     </select>
   </div>
   <div id="results"></div>
