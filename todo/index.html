@@ -202,12 +202,22 @@ function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
+// Some sources (e.g. CrossRef) return titles with their markup already HTML-entity-encoded
+// (literal "&lt;i&gt;" rather than "<i>"), which re-escaping alone would render as visible
+// entities instead of italics. Decoding first (via a detached element, never inserted into the
+// DOM) normalises both cases before we re-escape.
+function decodeEntities(str){
+  const el = document.createElement('textarea');
+  el.innerHTML = str;
+  return el.value;
+}
+
 // Escapes everything, then re-opens a tiny allowlist of formatting tags (Europe PMC / OpenAlex /
 // CrossRef titles often embed <i>/<em> around taxonomic names, and <sub>/<sup> around chemical
 // formulae or isotopes) — safe because only these exact escaped sequences get un-escaped, nothing
 // else can smuggle in real markup.
 function safeInlineHtml(str){
-  return escapeHtml(str).replace(/&lt;(\/?)(i|em|b|sub|sup)&gt;/gi, '<$1$2>');
+  return escapeHtml(decodeEntities(String(str))).replace(/&lt;(\/?)(i|em|b|sub|sup)&gt;/gi, '<$1$2>');
 }
 
 // Scan-added citations are a single "Authors (Year). Title. Journal." string — split off the
