@@ -47,8 +47,9 @@
 
   /* progress trail */
   .trail{ display:flex; gap:4px; margin: 22px 0 30px; }
-  .trail-dot{ flex:1; height:4px; background: var(--line); border-radius:2px; }
-  .trail-dot.done{ background: var(--moss); }
+  .trail-dot{ flex:1; height:4px; background: var(--line); border-radius:2px; cursor:default; }
+  .trail-dot.done{ background: var(--moss); cursor:pointer; }
+  .trail-dot.done:hover{ background: var(--moss-deep); }
   .trail-dot.current{ background: var(--ochre); }
 
   .step{ display:none; }
@@ -66,6 +67,19 @@
   textarea{ min-height:70px; font-family:'Source Serif 4', serif; }
   .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
   .hint-inline{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:#9a9280; margin-left:6px; }
+
+  /* inline lookup row (taxonomy match / DOI lookup) — button sized to match the input's height */
+  .inline-lookup-row{ display:flex; gap:8px; align-items:stretch; }
+  .inline-lookup-row input{ flex:1; margin-bottom:0; }
+  .inline-lookup-btn{
+    font-family:'IBM Plex Mono', monospace; font-size:13px; background:transparent; color:var(--moss-deep);
+    border:1px solid var(--line); border-radius:var(--radius); padding:10px 16px; margin:0; cursor:pointer; white-space:nowrap;
+  }
+  .inline-lookup-btn:hover{ border-color:var(--moss); }
+
+  /* per-step validation */
+  .field-missing{ outline:2px solid var(--danger); outline-offset:3px; border-radius:var(--radius); }
+  #stepValidationMsg{ color:var(--danger); text-align:right; min-height:16px; margin-top:-6px; }
 
   /* pill buttons for plain yes/no/unclear style questions */
   .pill-group{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
@@ -87,6 +101,9 @@
   .opt-card svg{ width:auto; height:90px; max-width:100%; margin:0 auto 8px; display:block; }
   .opt-title{ font-family:'Fraunces', serif; font-weight:600; font-size:13.5px; color:var(--ink); }
   .opt-desc{ font-size:11px; color:var(--ink-soft); margin-top:3px; line-height:1.3; }
+
+  /* illustrative present/absent diagram pair (shell, membrane, plastoglobuli, nucleomorph) — absence is shown by fading the diagram */
+  .illus-wrap[id$="-absent"] > svg:first-child{ opacity:0.28; }
 
   .subfield{
     background:var(--paper-raised); border:1px dashed var(--line); border-radius:var(--radius);
@@ -118,7 +135,8 @@
   .nav-btn:disabled{ opacity:0.4; cursor:default; }
   .status-msg{ font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--danger); margin-top:10px; min-height:16px; }
 
-  .review-row{ display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed var(--line); font-size:13.5px; }
+  .review-row{ display:flex; justify-content:space-between; padding:6px 4px; border-bottom:1px dashed var(--line); font-size:13.5px; cursor:pointer; border-radius:var(--radius); }
+  .review-row:hover{ background:var(--paper-raised); }
   .review-row span:first-child{ color:var(--ink-soft); font-family:'IBM Plex Mono', monospace; font-size:11.5px; }
   .thanks{ text-align:center; padding: 60px 0; }
   .thanks h2{ font-family:'Fraunces', serif; color:var(--moss-deep); }
@@ -160,11 +178,11 @@
     <div class="step" data-step-id="step-taxonomy">
       <div class="step-title">Which species?</div>
       <label for="species_name">Species (binomial)</label>
-      <div style="display:flex; gap:8px;">
-        <input type="text" id="species_name" placeholder="e.g. Chlamydomonas reinhardtii" style="flex:1;" required>
-        <button type="button" id="taxonomyLookupBtn" class="browse-btn" style="margin-top:0; white-space:nowrap;">Match</button>
+      <div class="inline-lookup-row">
+        <input type="text" id="species_name" placeholder="e.g. Chlamydomonas reinhardtii" required>
+        <button type="button" id="taxonomyLookupBtn" class="inline-lookup-btn">Match</button>
       </div>
-      <div id="taxonomyLookupStatus" class="hint-inline" style="display:block; margin:-10px 0 14px;"></div>
+      <div id="taxonomyLookupStatus" class="hint-inline" style="display:block; margin:6px 0 14px;"></div>
       <label for="strain">Strain / isolate <span class="hint-inline">if reported</span></label>
       <input type="text" id="strain" placeholder="e.g. CC-1690">
     </div>
@@ -173,11 +191,11 @@
     <div class="step" data-step-id="step-source">
       <div class="step-title">Where's this from?</div>
       <label for="doi">DOI</label>
-      <div style="display:flex; gap:8px;">
-        <input type="text" id="doi" placeholder="10.1073/pnas.1213498109" style="flex:1;">
-        <button type="button" id="doiLookupBtn" class="browse-btn" style="margin-top:0; white-space:nowrap;">Look up</button>
+      <div class="inline-lookup-row">
+        <input type="text" id="doi" placeholder="10.1073/pnas.1213498109">
+        <button type="button" id="doiLookupBtn" class="inline-lookup-btn">Look up</button>
       </div>
-      <div id="doiLookupStatus" class="hint-inline" style="display:block; margin:-10px 0 14px;"></div>
+      <div id="doiLookupStatus" class="hint-inline" style="display:block; margin:6px 0 14px;"></div>
       <label for="reference_citation">Reference citation</label>
       <input type="text" id="reference_citation" placeholder="Author(s), year, journal" required>
       <div id="duplicateWarning" class="hint-inline" style="display:block; color:var(--ochre); margin:-10px 0 14px;"></div>
@@ -205,6 +223,10 @@
         <button type="button" class="pill" data-value="tomography">Electron tomography</button>
         <button type="button" class="pill" data-value="other">Other</button>
       </div>
+      <div class="subfield" id="sub-method-other">
+        <div class="subfield-label">Specify</div>
+        <input type="text" id="method_other" placeholder="e.g. immunogold labelling">
+      </div>
     </div>
 
     <!-- STEP: chloroplast morphology -->
@@ -219,10 +241,15 @@
         <div class="opt-card" data-value="lobed"><svg viewBox="0 0 301 192"><g transform="matrix(1.66905,0,0,1.66905,25.906,-230.186)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(0.921031,0,0,0.921031,268.654,-495.937)"><path d="M-108.354,626.176C-108.354,626.176 -76.636,638.567 -60.011,641.659C-43.386,644.752 -12.787,666.818 0,671.104C12.787,675.391 21.195,687.206 14.687,695.346C8.179,703.486 -0.384,697.386 -8.569,690.801C-16.754,684.216 -34.475,678.837 -47.642,673.782C-60.81,668.726 -73.227,661.998 -77.348,668.446C-81.468,674.894 -84.998,679.276 -77.596,679.402C-70.194,679.528 -31.197,682.115 -27.134,685.117C-27.134,685.117 -17.996,689.231 -16.504,698.929C-15.011,708.628 -28.974,718.279 -53.227,722.001C-77.48,725.724 -92.974,724.504 -104.892,708.732C-116.81,692.96 -113.134,698.183 -113.134,698.183C-113.134,698.183 -116.151,691.882 -128.143,697.782C-140.135,703.682 -151.123,696.484 -156.478,693.464C-161.833,690.444 -164.125,699.111 -170.76,704.963C-177.396,710.814 -201.787,719.827 -225.421,708.761C-225.421,708.761 -240.078,699.929 -237.396,693.624C-234.715,687.319 -212.852,687.257 -201.893,687.342C-190.934,687.428 -173.192,687.99 -168.614,683.744C-164.037,679.498 -166.64,673.227 -169.222,669.345C-171.804,665.463 -179.942,670.803 -185.444,675.196C-190.945,679.588 -206.221,684.492 -240.337,681.399C-240.337,681.399 -257.843,679.812 -261.693,659.719C-265.543,639.627 -232.418,647.048 -225.851,648.668C-219.284,650.288 -193.312,654.604 -186.915,653.271C-180.518,651.937 -172.941,647.153 -183.406,640.37C-193.871,633.587 -198.258,641.773 -207.036,643.559C-215.814,645.345 -241.375,647.375 -258.052,632.22C-274.729,617.066 -259.769,608.025 -255.107,606.627C-250.445,605.228 -234.862,601.691 -203.31,615.232C-203.31,615.232 -189.024,621.71 -180.865,629.451C-172.705,637.191 -168.38,634.357 -172.146,628.838C-175.912,623.319 -187.153,613.156 -196.979,610.031C-206.806,606.906 -248.549,592.991 -246.165,584.594C-243.781,576.197 -233.575,566.402 -205.462,581.815C-177.35,597.227 -160.223,613.895 -143.067,616.641C-125.911,619.387 -113.681,624.288 -108.354,626.176Z" style="fill:none;stroke:var(--moss);stroke-width:3.39px;"/></g></svg><div class="opt-title">Lobed</div><div class="opt-desc">Many small, irregular lobes</div></div>
         <div class="opt-card" data-value="cuboid"><svg viewBox="0 0 216 192"><g transform="matrix(1.81215,0,0,1.81215,-22.23,-265.829)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1.44641,0,0,2.63568,933.238,-1471.35)"><path d="M-620.314,578.081C-620.314,578.081 -633.109,576.27 -633.655,594.768C-634.202,613.266 -637.073,612.945 -629.074,612.306C-621.076,611.666 -537.724,616.892 -523.479,618.749C-509.234,620.606 -508.705,619.552 -509.543,614.519C-510.38,609.486 -511.883,600.324 -510.245,596.076C-508.607,591.828 -509.606,591.929 -506.795,589.291C-503.984,586.653 -504.852,583.686 -510.968,580.802C-517.084,577.919 -552.031,580.501 -567.921,578.822C-583.812,577.143 -610.374,579.687 -620.314,578.081Z" style="fill:none;stroke:var(--moss);stroke-width:1.47px;"/></g></svg><div class="opt-title">Cuboid</div><div class="opt-desc">Flat, plate-like</div></div>
         <div class="opt-card" data-value="reticulate"><svg viewBox="0 0 215 192"><g transform="matrix(1.03208,0,0,1.03208,-20.026,-133.228)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:none;stroke:var(--moss);stroke-width:3.03px;"/></g><g transform="matrix(1.03208,0,0,1.03208,91.823,-134.363)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:none;stroke:var(--moss);stroke-width:3.03px;"/></g><g transform="matrix(0.510965,0,0,0.510965,39.147,26.782)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:none;stroke:var(--moss);stroke-width:6.12px;"/></g><g transform="matrix(0.666427,0,0,0.666427,52.601,-29.914)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:none;stroke:var(--moss);stroke-width:4.69px;"/></g><g transform="matrix(0.357732,0,0,0.357732,101.187,8.953)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:none;stroke:var(--moss);stroke-width:8.74px;"/></g><g transform="matrix(0.666427,0,0,0.666427,-10.098,-8.807)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:none;stroke:var(--moss);stroke-width:4.69px;"/></g><g transform="matrix(1.40987,0,0,1.40987,42.523,-170.279)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1.44641,0,0,2.63568,932.106,-1474.76)"><path d="M-633.496,580.317C-633.496,580.317 -635.558,580.506 -633.655,594.768C-629.847,623.305 -619.737,614.223 -611.739,613.584C-603.74,612.944 -537.724,616.892 -523.479,618.749C-522.947,618.818 -522.434,618.883 -521.94,618.945C-515.355,619.759 -512.05,619.844 -510.505,619.067C-509.059,618.341 -509.153,616.861 -509.543,614.519C-510.38,609.486 -511.883,600.324 -510.245,596.076C-508.607,591.828 -509.606,591.929 -506.795,589.291C-503.984,586.653 -504.852,583.686 -510.968,580.802C-517.084,577.919 -552.031,580.501 -567.921,578.822C-583.812,577.143 -622.059,571.4 -633.496,580.317Z" style="fill:none;stroke:var(--moss);stroke-width:1.47px;"/></g></svg><div class="opt-title">Reticulate</div><div class="opt-desc">Net-like, perforated</div></div>
+        <div class="opt-card" data-value="elongate"><svg viewBox="0 0 231 192"><g transform="matrix(0.920129,0,0,0.92013,57.6197,-96.1896)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(0.921033,0,0,0.921031,246.141,-506.914)"><path d="M-113.034,636.96C-113.034,636.96 -81.316,649.351 -64.691,652.444C-48.066,655.536 -30.743,681.485 -38.025,690.539C-48.359,703.387 -43.885,711.348 -52.256,717.556C-54.774,719.423 -59.871,719.315 -68.057,712.73C-76.242,706.145 -43.879,689.823 -50.152,680.03C-57.76,668.153 -98.232,655.886 -104.517,654.432C-109.219,653.344 -117.845,660.454 -123.335,662.304C-130.256,664.636 -138.878,666.979 -147.507,651.664C-152.428,642.931 -159.327,631.857 -169.755,628.353C-176.089,626.225 -190.237,617.832 -196.979,610.031C-209.305,595.769 -225.584,616.811 -239.87,628.905C-242.172,630.854 -251.204,626.783 -248.061,615.068C-244.902,603.294 -217.981,583.77 -203.888,591.496C-175.775,606.909 -164.903,624.68 -147.747,627.426C-130.591,630.171 -118.362,635.073 -113.034,636.96Z" style="fill:none;stroke:var(--moss);stroke-width:3.39px;"/></g></svg><div class="opt-title">Elongate</div><div class="opt-desc">Ribbon-like, e.g. Ectocarpus</div></div>
         <div class="opt-card" data-value="other"><svg viewBox="0 0 140 120"><path d="M 55 45 Q 70 35 85 48 Q 95 60 82 72 Q 68 82 55 70 Q 45 58 55 45 Z" fill="var(--ink-soft)" opacity="0.3" stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="3 2"/><text x="70" y="65" font-family="IBM Plex Mono, monospace" font-size="16" fill="var(--ink-soft)" text-anchor="middle">?</text></svg><div class="opt-title">Other</div><div class="opt-desc">Ring/ribbon-shaped etc.</div></div>
       </div>
+      <div class="subfield" id="sub-chloroplast-other">
+        <div class="subfield-label">Specify</div>
+        <input type="text" id="chloroplast_morphology_other" placeholder="e.g. ring-shaped">
+      </div>
       <div class="field-row">
-        <div><label for="pyrenoids_per_chloroplast">Pyrenoids per chloroplast</label><input type="number" id="pyrenoids_per_chloroplast" min="0" step="1" placeholder="e.g. 1"></div>
+        <div><label for="pyrenoids_per_chloroplast">Pyrenoids per chloroplast</label><input type="number" id="pyrenoids_per_chloroplast" min="0" step="1" placeholder="e.g. 1" required></div>
         <div><label for="cell_type_context">Cell type <span class="hint-inline">only if relevant</span></label><input type="text" id="cell_type_context" placeholder="e.g. gametes only"></div>
       </div>
     </div>
@@ -264,38 +291,37 @@
         <div class="opt-card" data-value="amorphous"><svg viewBox="0 0 124 192"><g transform="matrix(1.0000,0.0000,0.0000,1.0000,-635.0485,-667.4590)"><path d="M674.792,722.438C674.792,722.438 662.35,736.511 666.243,748.164C670.137,759.817 673.13,754.412 680.33,762.357C687.53,770.301 685.599,767.754 683.968,774.339C682.337,780.925 679.123,785.83 668.911,786.714C658.699,787.597 659.833,783.857 656.85,788.124C653.868,792.392 657.083,802.277 666.559,806.144C676.035,810.011 671.535,815.896 688.383,809.459C705.231,803.021 711.405,799.727 718.402,801.859C725.399,803.992 733.524,804.314 735.808,794.867C738.091,785.42 738.611,785.43 732.818,778.661C727.026,771.892 708.103,768.94 711.47,762.728C714.838,756.515 713.072,758.194 716.151,748.164C719.23,738.134 719.579,739.751 715.83,733.028C712.08,726.305 702.67,724.835 703.414,718.189C704.158,711.544 694.144,716.27 688.98,714.084C683.817,711.898 674.792,722.438 674.792,722.438Z" style="fill:var(--ochre);"/></g></svg><div class="opt-title">Amorphous</div></div>
         <div class="opt-card" data-value="other"><svg viewBox="0 0 140 120"><circle cx="70" cy="60" r="30" fill="none" stroke="var(--ink-soft)" stroke-width="2" stroke-dasharray="4 3"/><text x="70" y="65" font-family="IBM Plex Mono, monospace" font-size="14" fill="var(--ink-soft)" text-anchor="middle">?</text></svg><div class="opt-title">Other</div></div>
       </div>
+      <div class="subfield" id="sub-matrix-other">
+        <div class="subfield-label">Specify</div>
+        <input type="text" id="matrix_shape_other" placeholder="e.g. irregular">
+      </div>
       <label for="matrix_diameter_um">Matrix diameter <span class="hint-inline">µm, estimated</span></label>
-      <input type="number" id="matrix_diameter_um" min="0" step="0.1" placeholder="e.g. 2.5">
+      <input type="number" id="matrix_diameter_um" min="0" step="0.1" placeholder="e.g. 2.5" required>
     </div>
 
     <!-- STEP: traversing membranes -->
     <div class="step" data-step-id="step-traversing">
       <div class="step-title">Traversing membranes</div>
-      <div class="pill-group" data-field="traversing_membranes">
-        <button type="button" class="pill" data-value="present">Present</button>
-        <button type="button" class="pill" data-value="absent">Absent</button>
-        <button type="button" class="pill" data-value="unclear">Unclear</button>
+      <div class="step-hint">Click the closest match — or "Absent" if there's no membrane traversing the matrix.</div>
+      <div class="card-grid" data-field="membrane_type">
+        <div class="opt-card" data-value="sheet"><svg viewBox="0 0 177 192"><g transform="matrix(3.8866,0,0,3.8866,-204.25,-701.78)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(2.7376,0,0,2.7376,-139.49,-3205.4)"><path d="M61.141,1187.37C65.564,1190.08 60.089,1185.82 78.333,1199.13C83.152,1202.64 88.473,1204.28 92.624,1208.59C99.736,1215.97 98.956,1213.22 107.627,1219.46" style="fill:none;stroke:var(--moss);stroke-width:2.93px;"/></g><g transform="matrix(-2.7373,-0.039639,0.039639,-2.7373,270.84,3403)"><path d="M65.307,1191.04C63.029,1189.66 70.462,1194.39 78.333,1199.13C83.445,1202.2 88.473,1204.28 92.624,1208.59C99.736,1215.97 102.884,1217.23 111.555,1223.48" style="fill:none;stroke:var(--moss);stroke-width:2.93px;"/></g></svg><div class="opt-title">Sheets</div></div>
+        <div class="opt-card" data-value="fenestrated"><svg viewBox="0 0 177 192"><g transform="matrix(3.8193,0,0,3.8193,-194.91,-687.15)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1.5146,0,0,1.5146,-327.73,-1712.2)"><path d="M277.067,1217.89C277.067,1217.89 278.132,1209.88 277.518,1207.91" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.3378,0.71005,-0.71005,1.3378,546.85,-1717.4)"><path d="M277.067,1217.89C276.364,1216.82 279.875,1209.96 280.503,1209.87" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.3378,0.71005,-0.71005,1.3378,576.57,-1734.2)"><path d="M277.067,1217.89C276.364,1216.82 276.616,1214.58 277.244,1214.5" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.5146,0,0,1.5146,-333.58,-1712.7)"><path d="M269.661,1172.12C269.661,1172.12 269.438,1172.72 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.0737,-1.0682,1.0682,1.0737,-1493,-894.36)"><path d="M269.661,1172.12C269.661,1172.12 269.438,1172.72 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(0.69691,1.3447,-1.3447,0.69691,1491.3,-1111.9)"><path d="M268.451,1167.49C268.451,1167.49 269.438,1172.72 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(-0.84512,1.2569,-1.2569,-0.84512,1808.9,742.29)"><path d="M271.214,1169.57C271.429,1170.95 270.376,1174.32 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(0.95031,-1.646,1.3117,0.75729,-1672.5,-337.2)"><path d="M271.214,1169.57C270.437,1171.68 270.472,1175.45 270.845,1176.09" style="fill:none;stroke:var(--moss);stroke-width:4.59px;"/></g></svg><div class="opt-title">Fenestrated</div></div>
+        <div class="opt-card" data-value="curved"><svg viewBox="0 0 177 192"><g transform="matrix(3.6443,0,0,3.6443,-176.97,-652.92)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1.4452,0,0,1.4452,-591.76,-1632.4)"><path d="M451.291,1167.43C451.291,1167.43 449.853,1177.29 459.639,1173.63C469.425,1169.98 471.698,1167.09 477.965,1173.63C484.232,1180.18 487.544,1177.67 492.687,1176.48C497.83,1175.28 506.874,1183.87 495.964,1187.63C485.054,1191.39 481.155,1183.12 476.747,1192.95C472.339,1202.78 483.483,1206.65 491.329,1205.95C499.175,1205.25 503.179,1212.15 506.703,1215.74" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.4452,0,0,1.4452,-591.76,-1632.4)"><path d="M486.516,1228.52C486.516,1228.52 488.29,1219.65 485.01,1217.34C481.73,1215.04 474.237,1220.04 470.544,1213.16C466.851,1206.29 465.339,1201.24 466.857,1198.08C468.376,1194.91 470.54,1188.17 466.969,1187.04C463.398,1185.91 461.82,1178.92 456.433,1184.51C451.047,1190.1 452.836,1191.69 448.566,1191.58C444.295,1191.48 441.333,1191.61 435.897,1188.85" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.4452,0,0,1.4452,-591.76,-1632.4)"><path d="M461.446,1228.52C461.446,1228.52 460.421,1215.61 462.52,1214.1C464.619,1212.58 459.972,1204.23 453.678,1205.45C447.383,1206.66 449.355,1201.41 444.485,1199.67C439.614,1197.93 437.176,1195.92 433.426,1198.04" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g></svg><div class="opt-title">Curved</div></div>
+        <div class="opt-card" data-value="invaginated"><svg viewBox="0 0 177 192"><g transform="matrix(3.4165,0,0,3.4165,-170.47,-606.76)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1.3549,0,0,1.3549,-847.31,-1525)"><path d="M651.492,1228.52C651.492,1228.52 671.081,1232.02 662.303,1219.35C653.524,1206.69 653.12,1204.14 652.844,1196.6C652.567,1189.07 653.355,1176.83 658.847,1171.93C664.339,1167.03 661.451,1167.71 666.345,1165.18C671.24,1162.64 666.489,1164.46 670.903,1171.1C675.316,1177.74 678.69,1190.34 682.979,1193.17C687.268,1196 689.331,1194.52 689.701,1192.28C690.071,1190.04 687.848,1187.52 686.442,1184.85C685.035,1182.19 682.61,1176.08 681.248,1172.98C679.885,1169.88 680.463,1167.22 678.326,1163.98C676.189,1160.75 675.49,1158.96 680,1158.68C684.51,1158.4 705.922,1156.16 714.949,1174.42C723.975,1192.69 721.86,1197.45 717.498,1207.38C713.136,1217.31 709.529,1212.81 711.19,1224.42C712.85,1236.02 719.263,1228.97 728.857,1229.73" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g></svg><div class="opt-title">Invaginated</div></div>
+        <div class="opt-card" data-value="proximal"><svg viewBox="0 0 177 192"><g transform="matrix(3.4165,0,0,3.4165,-179.12,-622.66)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1,0,0,1,-1067.2,-1108.4)"><path d="M1205.83,1263.03C1205.83,1263.03 1180.35,1240.55 1167.77,1225.03" style="fill:none;stroke:var(--moss);stroke-width:8.33px;"/></g><g transform="matrix(1,0,0,1,-1077.6,-1103.9)"><path d="M1191.01,1266.1C1191.01,1266.1 1180.35,1240.55 1167.77,1225.03" style="fill:none;stroke:var(--moss);stroke-width:8.33px;"/></g><g transform="matrix(0.97977,0,0,1,-1035.3,-1116.9)"><path d="M1207.43,1255.04C1207.43,1255.04 1180.26,1242.08 1167.67,1226.55" style="fill:none;stroke:var(--moss);stroke-width:8.42px;"/></g></svg><div class="opt-title">Proximal</div></div>
+        <div class="opt-card" data-value="naked"><svg viewBox="0 0 177 192"><g transform="matrix(3.41653,0,0,3.41653,-165.06,-601.545)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g></svg><div class="opt-title">Absent</div><div class="opt-desc">Naked, no traversing membrane</div></div>
       </div>
 
-      <div class="subfield" id="sub-traversing">
-        <div class="subfield-label">Type</div>
-        <div class="card-grid" data-field="membrane_type">
-          <div class="opt-card" data-value="sheet"><svg viewBox="0 0 177 192"><g transform="matrix(3.8866,0,0,3.8866,-204.25,-701.78)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(2.7376,0,0,2.7376,-139.49,-3205.4)"><path d="M61.141,1187.37C65.564,1190.08 60.089,1185.82 78.333,1199.13C83.152,1202.64 88.473,1204.28 92.624,1208.59C99.736,1215.97 98.956,1213.22 107.627,1219.46" style="fill:none;stroke:var(--moss);stroke-width:2.93px;"/></g><g transform="matrix(-2.7373,-0.039639,0.039639,-2.7373,270.84,3403)"><path d="M65.307,1191.04C63.029,1189.66 70.462,1194.39 78.333,1199.13C83.445,1202.2 88.473,1204.28 92.624,1208.59C99.736,1215.97 102.884,1217.23 111.555,1223.48" style="fill:none;stroke:var(--moss);stroke-width:2.93px;"/></g></svg><div class="opt-title">Sheets</div></div>
-          <div class="opt-card" data-value="fenestrated"><svg viewBox="0 0 177 192"><g transform="matrix(3.8193,0,0,3.8193,-194.91,-687.15)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1.5146,0,0,1.5146,-327.73,-1712.2)"><path d="M277.067,1217.89C277.067,1217.89 278.132,1209.88 277.518,1207.91" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.3378,0.71005,-0.71005,1.3378,546.85,-1717.4)"><path d="M277.067,1217.89C276.364,1216.82 279.875,1209.96 280.503,1209.87" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.3378,0.71005,-0.71005,1.3378,576.57,-1734.2)"><path d="M277.067,1217.89C276.364,1216.82 276.616,1214.58 277.244,1214.5" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.5146,0,0,1.5146,-333.58,-1712.7)"><path d="M269.661,1172.12C269.661,1172.12 269.438,1172.72 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.0737,-1.0682,1.0682,1.0737,-1493,-894.36)"><path d="M269.661,1172.12C269.661,1172.12 269.438,1172.72 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(0.69691,1.3447,-1.3447,0.69691,1491.3,-1111.9)"><path d="M268.451,1167.49C268.451,1167.49 269.438,1172.72 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(-0.84512,1.2569,-1.2569,-0.84512,1808.9,742.29)"><path d="M271.214,1169.57C271.429,1170.95 270.376,1174.32 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(0.95031,-1.646,1.3117,0.75729,-1672.5,-337.2)"><path d="M271.214,1169.57C270.437,1171.68 270.472,1175.45 270.845,1176.09" style="fill:none;stroke:var(--moss);stroke-width:4.59px;"/></g></svg><div class="opt-title">Fenestrated</div></div>
-          <div class="opt-card" data-value="curved"><svg viewBox="0 0 177 192"><g transform="matrix(3.6443,0,0,3.6443,-176.97,-652.92)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1.4452,0,0,1.4452,-591.76,-1632.4)"><path d="M451.291,1167.43C451.291,1167.43 449.853,1177.29 459.639,1173.63C469.425,1169.98 471.698,1167.09 477.965,1173.63C484.232,1180.18 487.544,1177.67 492.687,1176.48C497.83,1175.28 506.874,1183.87 495.964,1187.63C485.054,1191.39 481.155,1183.12 476.747,1192.95C472.339,1202.78 483.483,1206.65 491.329,1205.95C499.175,1205.25 503.179,1212.15 506.703,1215.74" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.4452,0,0,1.4452,-591.76,-1632.4)"><path d="M486.516,1228.52C486.516,1228.52 488.29,1219.65 485.01,1217.34C481.73,1215.04 474.237,1220.04 470.544,1213.16C466.851,1206.29 465.339,1201.24 466.857,1198.08C468.376,1194.91 470.54,1188.17 466.969,1187.04C463.398,1185.91 461.82,1178.92 456.433,1184.51C451.047,1190.1 452.836,1191.69 448.566,1191.58C444.295,1191.48 441.333,1191.61 435.897,1188.85" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.4452,0,0,1.4452,-591.76,-1632.4)"><path d="M461.446,1228.52C461.446,1228.52 460.421,1215.61 462.52,1214.1C464.619,1212.58 459.972,1204.23 453.678,1205.45C447.383,1206.66 449.355,1201.41 444.485,1199.67C439.614,1197.93 437.176,1195.92 433.426,1198.04" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g></svg><div class="opt-title">Curved</div></div>
-          <div class="opt-card" data-value="invaginated"><svg viewBox="0 0 177 192"><g transform="matrix(3.4165,0,0,3.4165,-170.47,-606.76)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1.3549,0,0,1.3549,-847.31,-1525)"><path d="M651.492,1228.52C651.492,1228.52 671.081,1232.02 662.303,1219.35C653.524,1206.69 653.12,1204.14 652.844,1196.6C652.567,1189.07 653.355,1176.83 658.847,1171.93C664.339,1167.03 661.451,1167.71 666.345,1165.18C671.24,1162.64 666.489,1164.46 670.903,1171.1C675.316,1177.74 678.69,1190.34 682.979,1193.17C687.268,1196 689.331,1194.52 689.701,1192.28C690.071,1190.04 687.848,1187.52 686.442,1184.85C685.035,1182.19 682.61,1176.08 681.248,1172.98C679.885,1169.88 680.463,1167.22 678.326,1163.98C676.189,1160.75 675.49,1158.96 680,1158.68C684.51,1158.4 705.922,1156.16 714.949,1174.42C723.975,1192.69 721.86,1197.45 717.498,1207.38C713.136,1217.31 709.529,1212.81 711.19,1224.42C712.85,1236.02 719.263,1228.97 728.857,1229.73" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g></svg><div class="opt-title">Invaginated</div></div>
-          <div class="opt-card" data-value="proximal"><svg viewBox="0 0 177 192"><g transform="matrix(3.4165,0,0,3.4165,-179.12,-622.66)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1,0,0,1,-1067.2,-1108.4)"><path d="M1205.83,1263.03C1205.83,1263.03 1180.35,1240.55 1167.77,1225.03" style="fill:none;stroke:var(--moss);stroke-width:8.33px;"/></g><g transform="matrix(1,0,0,1,-1077.6,-1103.9)"><path d="M1191.01,1266.1C1191.01,1266.1 1180.35,1240.55 1167.77,1225.03" style="fill:none;stroke:var(--moss);stroke-width:8.33px;"/></g><g transform="matrix(0.97977,0,0,1,-1035.3,-1116.9)"><path d="M1207.43,1255.04C1207.43,1255.04 1180.26,1242.08 1167.67,1226.55" style="fill:none;stroke:var(--moss);stroke-width:8.42px;"/></g></svg><div class="opt-title">Proximal</div></div>
+      <div class="subfield visible" id="sub-continuity" style="display:none;">
+        <div class="subfield-label">Continuous with external thylakoids? <span class="hint-inline">sheets/fenestrated/curved only</span></div>
+        <div class="pill-group" data-field="continuous_with_thylakoids">
+          <button type="button" class="pill" data-value="yes">Yes</button>
+          <button type="button" class="pill" data-value="no">No</button>
+          <button type="button" class="pill" data-value="unclear">Unclear</button>
         </div>
+      </div>
 
-        <div class="subfield visible" id="sub-continuity" style="display:none;">
-          <div class="subfield-label">Continuous with external thylakoids? <span class="hint-inline">sheets/fenestrated/curved only</span></div>
-          <div class="pill-group" data-field="continuous_with_thylakoids">
-            <button type="button" class="pill" data-value="yes">Yes</button>
-            <button type="button" class="pill" data-value="no">No</button>
-            <button type="button" class="pill" data-value="unclear">Unclear</button>
-          </div>
-        </div>
-
+      <div class="subfield" id="sub-traversing-extent">
         <div class="subfield-label">Extent</div>
         <div class="card-grid" data-field="traversal_extent">
           <div class="opt-card" data-value="complete"><svg viewBox="0 0 177 192"><g transform="matrix(3.41653,0,0,3.41653,-169.91,-605.282)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1,0,0,1,-1081.22,-1124.7)"><path d="M1221.12,1278.29C1221.12,1278.29 1151.97,1214.67 1121.24,1159.51" style="fill:none;stroke:var(--moss);stroke-width:8.33px;"/></g><g transform="matrix(1,0,0,1,-1091.64,-1120.18)"><path d="M1206.3,1281.36C1206.3,1281.36 1144.02,1186.94 1118.94,1167.16" style="fill:none;stroke:var(--moss);stroke-width:8.33px;"/></g><g transform="matrix(0.979772,0,0,1,-1049.33,-1133.22)"><path d="M1223.03,1270.29C1223.03,1270.29 1160.88,1234.01 1121.69,1163.24" style="fill:none;stroke:var(--moss);stroke-width:8.42px;"/></g></svg><div class="opt-title">Complete</div><div class="opt-desc">Spans the whole matrix</div></div>
@@ -305,7 +331,7 @@
         </div>
         <div>
           <label for="traversal_count">Number of traversions</label>
-          <input type="text" id="traversal_count" placeholder="e.g. 3">
+          <input type="text" id="traversal_count" placeholder="e.g. 3" required>
         </div>
       </div>
     </div>
@@ -327,7 +353,7 @@
           <div class="opt-card" data-value="extra_chloroplastic"><svg viewBox="0 0 177 192"><g transform="matrix(3.2523,0,0,3.2523,-152.36,-566.33)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(3.1959,0,0,3.1959,-147.39,-555.72)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1.4621,0,0,1.5117,-36.112,-2036.7)"><path d="M45.655,1425.15C45.655,1425.15 52.511,1429.01 51.65,1426.12C42.029,1393.83 68.325,1376.43 87.134,1377.85C105.943,1379.26 124.665,1396.37 118.114,1422.09C118.114,1422.09 109.309,1446.92 83.523,1445.66C79.033,1445.44 84.645,1449.84 86.552,1449.93C88.458,1450.01 104.886,1454.29 119.647,1435.17C125.276,1427.87 131.046,1413.97 122.409,1393.72C122.409,1393.72 115.541,1373.44 86.432,1370.62C86.432,1370.62 78.662,1369.92 68.531,1374.85C31.169,1393.04 46.24,1424.77 45.655,1425.15Z" style="fill:var(--ink-soft);stroke:var(--ink-soft);stroke-width:3.5px;"/></g><g transform="matrix(1.3939,0,0,1.3939,695.17,-620.2)"><path d="M-451.444,568.344C-452.3,567.524 -455.117,566.154 -456.544,563.03C-457.582,560.756 -459.154,553.959 -455.409,550.367C-450.924,546.066 -440.725,545.129 -438.701,545.401C-423.174,547.489 -411.429,536.3 -410.26,534.963C-393.037,515.262 -411.476,464.002 -456.102,490.847C-470.891,499.743 -467.787,524.966 -462.523,531.197C-455.3,539.749 -470.537,553.89 -480.438,542.932" style="fill:none;stroke:var(--moss);stroke-width:2.24px;"/></g></svg><div class="opt-title">Extra-chloroplastic</div></div>
         </div>
         <div class="field-row">
-          <div><label for="starch_count">Number of granules/plates</label><input type="text" id="starch_count" placeholder="e.g. 2"></div>
+          <div><label for="starch_count">Number of granules/plates</label><input type="text" id="starch_count" placeholder="e.g. 2" required></div>
           <div>
             <label>Coverage</label>
             <div class="pill-group" data-field="starch_coverage">
@@ -342,6 +368,10 @@
           <div class="opt-card" data-value="granule"><svg viewBox="0 0 177 192"><g transform="matrix(3.1959,0,0,3.1959,-156.28,-555.72)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(0.99951,-0.03116,0.03116,0.99951,-263.69,-1547.1)"><path d="M266.592,1601.89C266.592,1601.89 266.181,1615.28 272.65,1612.37C279.119,1609.45 278.759,1610.13 280.467,1609.36C282.176,1608.59 277.797,1603.38 275.936,1602.37C274.076,1601.37 270.577,1599.93 266.592,1601.89Z" style="fill:var(--ink-soft);stroke:var(--ink-soft);stroke-width:5.21px;"/></g><g transform="matrix(-0.99821,0.059741,-0.059741,-0.99821,498.24,1665.1)"><path d="M266.592,1601.89C266.592,1601.89 266.181,1615.28 272.65,1612.37C279.119,1609.45 278.759,1610.13 280.467,1609.36C282.176,1608.59 277.797,1603.38 275.936,1602.37C274.076,1601.37 270.577,1599.93 266.592,1601.89Z" style="fill:var(--ink-soft);stroke:var(--ink-soft);stroke-width:5.21px;"/></g><g transform="matrix(0.18299,-0.98311,0.98311,0.18299,-1550,19.689)"><path d="M266.592,1601.89C266.592,1601.89 266.181,1615.28 272.65,1612.37L276.681,1609.02C276.681,1609.02 276.14,1597.12 274.279,1596.12C272.419,1595.11 270.577,1599.93 266.592,1601.89Z" style="fill:var(--ink-soft);stroke:var(--ink-soft);stroke-width:5.21px;"/></g><g transform="matrix(0.64149,-0.76713,0.76713,0.64149,-1273.5,-724.18)"><path d="M266.592,1601.89C266.592,1601.89 266.181,1615.28 272.65,1612.37L276.681,1609.02C276.681,1609.02 276.14,1597.12 274.279,1596.12C272.419,1595.11 270.577,1599.93 266.592,1601.89Z" style="fill:var(--ink-soft);stroke:var(--ink-soft);stroke-width:5.21px;"/></g><g transform="matrix(0.082293,-0.81676,1.0266,0.10344,-1567.1,137.22)"><path d="M305.609,1590.44C305.609,1590.44 302.088,1605.35 307.184,1608.14C312.281,1610.94 319.876,1606.18 320.203,1601.89C320.53,1597.61 308.408,1591.17 305.609,1590.44Z" style="fill:var(--ink-soft);stroke:var(--ink-soft);stroke-width:5.59px;"/></g><g transform="matrix(-0.063546,0.63069,-0.86034,-0.086684,1515.2,2.263)"><path d="M305.609,1590.44C305.609,1590.44 310.509,1600.09 311.263,1604.72C311.769,1607.84 312.319,1612.46 313.735,1611.04C316.205,1608.56 325.073,1600.46 326.311,1598.9C328.99,1595.54 308.408,1591.17 305.609,1590.44Z" style="fill:var(--ink-soft);stroke:var(--ink-soft);stroke-width:6.87px;"/></g></svg><div class="opt-title">Granule</div></div>
           <div class="opt-card" data-value="other"><svg viewBox="0 0 140 120"><circle cx="70" cy="60" r="30" fill="none" stroke="var(--ink-soft)" stroke-width="2" stroke-dasharray="4 3"/><text x="70" y="65" font-family="IBM Plex Mono, monospace" font-size="14" fill="var(--ink-soft)" text-anchor="middle">?</text></svg><div class="opt-title">Other</div></div>
         </div>
+        <div class="subfield" id="sub-starch-other">
+          <div class="subfield-label">Specify</div>
+          <input type="text" id="starch_morphology_other" placeholder="e.g. tubular">
+        </div>
       </div>
     </div>
 
@@ -349,8 +379,9 @@
     <div class="step" data-step-id="step-shell">
       <div class="step-title">Shell</div>
       <div class="step-hint">Thin protein layer — often hard to observe. Only designate if clearly visible. See Shimakawa et al. (2024) Cell.</div>
-      <div class="card-grid" style="max-width:180px;">
-        <div class="opt-card" id="illus-shell"><svg viewBox="0 0 124 192"><g transform="matrix(1.2832,-0.50276,1.326,3.3842,-304.11,-559.85)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1,0,0,1,-637.76,-1322.1)"><path d="M677.366,1358.74C677.366,1358.74 678.845,1364.16 686.46,1368.78C694.075,1373.39 719.575,1404.9 723.514,1432.96C723.514,1432.96 725.185,1441.9 724.619,1449.41C724.053,1456.91 720.537,1459.52 728.082,1469.93" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(-0.68998,0.72383,0.72383,0.68998,-479.25,-1388.7)"><path d="M678.956,1357.16C678.956,1357.16 680.481,1361.27 682.221,1363.64C683.844,1365.85 686.113,1367.71 689.788,1369.94C697.403,1374.56 719.575,1404.9 723.514,1432.96C723.514,1432.96 725.185,1441.9 724.619,1449.41C724.053,1456.91 720.355,1457.31 724.002,1471.55" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g></svg><div class="opt-title">Present</div><div class="opt-desc">Click to select Yes</div></div>
+      <div class="card-grid" style="max-width:380px;">
+        <div class="opt-card illus-wrap" id="illus-shell"><svg viewBox="0 0 124 192"><g transform="matrix(1.2832,-0.50276,1.326,3.3842,-304.11,-559.85)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1,0,0,1,-637.76,-1322.1)"><path d="M677.366,1358.74C677.366,1358.74 678.845,1364.16 686.46,1368.78C694.075,1373.39 719.575,1404.9 723.514,1432.96C723.514,1432.96 725.185,1441.9 724.619,1449.41C724.053,1456.91 720.537,1459.52 728.082,1469.93" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(-0.68998,0.72383,0.72383,0.68998,-479.25,-1388.7)"><path d="M678.956,1357.16C678.956,1357.16 680.481,1361.27 682.221,1363.64C683.844,1365.85 686.113,1367.71 689.788,1369.94C697.403,1374.56 719.575,1404.9 723.514,1432.96C723.514,1432.96 725.185,1441.9 724.619,1449.41C724.053,1456.91 720.355,1457.31 724.002,1471.55" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g></svg><div class="opt-title">Present</div><div class="opt-desc">Click to select Yes</div></div>
+        <div class="opt-card illus-wrap" id="illus-shell-absent"><svg viewBox="0 0 124 192"><g transform="matrix(1.2832,-0.50276,1.326,3.3842,-304.11,-559.85)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1,0,0,1,-637.76,-1322.1)"><path d="M677.366,1358.74C677.366,1358.74 678.845,1364.16 686.46,1368.78C694.075,1373.39 719.575,1404.9 723.514,1432.96C723.514,1432.96 725.185,1441.9 724.619,1449.41C724.053,1456.91 720.537,1459.52 728.082,1469.93" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(-0.68998,0.72383,0.72383,0.68998,-479.25,-1388.7)"><path d="M678.956,1357.16C678.956,1357.16 680.481,1361.27 682.221,1363.64C683.844,1365.85 686.113,1367.71 689.788,1369.94C697.403,1374.56 719.575,1404.9 723.514,1432.96C723.514,1432.96 725.185,1441.9 724.619,1449.41C724.053,1456.91 720.355,1457.31 724.002,1471.55" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g></svg><div class="opt-title">Absent</div><div class="opt-desc">Click to select No</div></div>
       </div>
       <div class="pill-group" data-field="shell_present">
         <button type="button" class="pill" data-value="yes">Yes</button>
@@ -363,8 +394,9 @@
     <div class="step" data-step-id="step-membrane">
       <div class="step-title">Surrounding membrane</div>
       <div class="step-hint">A distinct membrane closely surrounding the matrix — includes thylakoids running close/appressed to it.</div>
-      <div class="card-grid" style="max-width:180px;">
-        <div class="opt-card" id="illus-membrane"><svg viewBox="0 0 177 192"><g transform="matrix(3.4165,0,0,3.4165,-170.46,-606.76)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1.3549,0,0,1.3549,-847.3,-1525)"><path d="M635.059,1155.7C644.867,1165.87 653.355,1176.83 658.847,1171.93C664.339,1167.03 661.451,1167.71 666.345,1165.18C671.24,1162.64 675.49,1158.96 680,1158.68C684.51,1158.4 705.922,1156.16 714.949,1174.42C723.975,1192.69 721.86,1197.45 717.498,1207.38C713.136,1217.31 729.422,1223.3 741.263,1230.14" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1,0,0,1,-820.63,-1101)"><path d="M973.221,1252.55L943.205,1236.91C943.205,1236.91 928.704,1227.75 924.788,1232.95C924.788,1232.95 902.332,1249.29 877.702,1229.01C877.702,1229.01 853.399,1214.68 857.844,1181.87C857.844,1181.87 859.647,1178.1 854.146,1173.4C848.645,1168.69 830.792,1152.34 830.792,1152.34" style="fill:none;stroke:var(--moss);stroke-width:8.3px;"/></g></svg><div class="opt-title">Present</div><div class="opt-desc">Click to select Yes</div></div>
+      <div class="card-grid" style="max-width:380px;">
+        <div class="opt-card illus-wrap" id="illus-membrane"><svg viewBox="0 0 177 192"><g transform="matrix(3.4165,0,0,3.4165,-170.46,-606.76)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1.3549,0,0,1.3549,-847.3,-1525)"><path d="M635.059,1155.7C644.867,1165.87 653.355,1176.83 658.847,1171.93C664.339,1167.03 661.451,1167.71 666.345,1165.18C671.24,1162.64 675.49,1158.96 680,1158.68C684.51,1158.4 705.922,1156.16 714.949,1174.42C723.975,1192.69 721.86,1197.45 717.498,1207.38C713.136,1217.31 729.422,1223.3 741.263,1230.14" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1,0,0,1,-820.63,-1101)"><path d="M973.221,1252.55L943.205,1236.91C943.205,1236.91 928.704,1227.75 924.788,1232.95C924.788,1232.95 902.332,1249.29 877.702,1229.01C877.702,1229.01 853.399,1214.68 857.844,1181.87C857.844,1181.87 859.647,1178.1 854.146,1173.4C848.645,1168.69 830.792,1152.34 830.792,1152.34" style="fill:none;stroke:var(--moss);stroke-width:8.3px;"/></g></svg><div class="opt-title">Present</div><div class="opt-desc">Click to select Yes</div></div>
+        <div class="opt-card illus-wrap" id="illus-membrane-absent"><svg viewBox="0 0 177 192"><g transform="matrix(3.4165,0,0,3.4165,-170.46,-606.76)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1.3549,0,0,1.3549,-847.3,-1525)"><path d="M635.059,1155.7C644.867,1165.87 653.355,1176.83 658.847,1171.93C664.339,1167.03 661.451,1167.71 666.345,1165.18C671.24,1162.64 675.49,1158.96 680,1158.68C684.51,1158.4 705.922,1156.16 714.949,1174.42C723.975,1192.69 721.86,1197.45 717.498,1207.38C713.136,1217.31 729.422,1223.3 741.263,1230.14" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1,0,0,1,-820.63,-1101)"><path d="M973.221,1252.55L943.205,1236.91C943.205,1236.91 928.704,1227.75 924.788,1232.95C924.788,1232.95 902.332,1249.29 877.702,1229.01C877.702,1229.01 853.399,1214.68 857.844,1181.87C857.844,1181.87 859.647,1178.1 854.146,1173.4C848.645,1168.69 830.792,1152.34 830.792,1152.34" style="fill:none;stroke:var(--moss);stroke-width:8.3px;"/></g></svg><div class="opt-title">Absent</div><div class="opt-desc">Click to select No</div></div>
       </div>
       <div class="pill-group" data-field="membrane_barrier_present">
         <button type="button" class="pill" data-value="yes">Yes</button>
@@ -394,6 +426,10 @@
           <div class="subfield-label">Specify origin</div>
           <input type="text" id="barrier_membrane_subtype_other" placeholder="e.g. ER-derived">
         </div>
+        <div class="subfield" id="sub-membrane-morphology-other">
+          <div class="subfield-label">Specify morphology</div>
+          <input type="text" id="barrier_membrane_morphology_other" placeholder="e.g. undulating">
+        </div>
       </div>
     </div>
 
@@ -401,8 +437,9 @@
     <div class="step" data-step-id="step-plastoglobuli">
       <div class="step-title">Plastoglobuli</div>
       <div class="step-hint">Small, roughly spherical lipid droplets, sometimes visible in or around the pyrenoid.</div>
-      <div class="card-grid" style="max-width:180px;">
-        <div class="opt-card" id="illus-plastoglobuli"><svg viewBox="0 0 177 192"><g transform="matrix(3.8193,0,0,3.8193,-194.91,-687.15)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1.5146,0,0,1.5146,-327.73,-1712.2)"><path d="M277.067,1217.89C277.067,1217.89 278.132,1209.88 277.518,1207.91" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.3378,0.71005,-0.71005,1.3378,546.85,-1717.4)"><path d="M277.067,1217.89C276.364,1216.82 279.875,1209.96 280.503,1209.87" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.3378,0.71005,-0.71005,1.3378,576.57,-1734.2)"><path d="M277.067,1217.89C276.364,1216.82 276.616,1214.58 277.244,1214.5" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.5146,0,0,1.5146,-333.58,-1712.7)"><path d="M269.661,1172.12C269.661,1172.12 269.438,1172.72 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.0737,-1.0682,1.0682,1.0737,-1493,-894.36)"><path d="M269.661,1172.12C269.661,1172.12 269.438,1172.72 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(0.69691,1.3447,-1.3447,0.69691,1491.3,-1111.9)"><path d="M268.451,1167.49C268.451,1167.49 269.438,1172.72 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(-0.84512,1.2569,-1.2569,-0.84512,1808.9,742.29)"><path d="M271.214,1169.57C271.429,1170.95 270.376,1174.32 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(0.95031,-1.646,1.3117,0.75729,-1672.5,-337.2)"><path d="M271.214,1169.57C270.437,1171.68 270.472,1175.45 270.845,1176.09" style="fill:none;stroke:var(--moss);stroke-width:4.59px;"/></g><g transform="matrix(1,0,0,1,-799.62,-1329.5)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(1,0,0,1,-761.02,-1360.5)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(1,0,0,1,-769.64,-1340.7)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(1,0,0,1,-753.9,-1328.5)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(1,0,0,1,-766.54,-1315.9)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-463.87,-840.89)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-481.36,-826.28)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(-0.47737,-0.44804,0.44804,-0.47737,-177.36,1173.6)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-488.35,-857.54)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-454.9,-851.64)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-468.51,-812.78)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-471.79,-851.55)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-468.05,-862.81)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-482.03,-820.89)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-486.11,-878.24)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-442.09,-842.26)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-496.25,-868.16)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(1.2699,0,0,1.2699,-1052.3,-1737.7)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.69862,0,0,0.69862,-549.21,-919.11)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.69862,0,0,0.69862,-535.86,-902.91)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-254.92,-417.77)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-267.93,-422.68)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-261.49,-427.63)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-208.32,-438.91)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-195.41,-466.34)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-208.76,-455.03)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-219.39,-461.17)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-188.13,-423.34)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-231.3,-420.33)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-230.51,-401.26)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-125.72,-261.97)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-119.53,-268.87)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-117.82,-252.82)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-105.47,-259.86)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-101.21,-272.28)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-129.48,-245.93)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-141.58,-226.27)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-82.382,-225.4)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g></svg><div class="opt-title">Present</div><div class="opt-desc">Click to select Yes</div></div>
+      <div class="card-grid" style="max-width:380px;">
+        <div class="opt-card illus-wrap" id="illus-plastoglobuli"><svg viewBox="0 0 177 192"><g transform="matrix(3.8193,0,0,3.8193,-194.91,-687.15)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1.5146,0,0,1.5146,-327.73,-1712.2)"><path d="M277.067,1217.89C277.067,1217.89 278.132,1209.88 277.518,1207.91" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.3378,0.71005,-0.71005,1.3378,546.85,-1717.4)"><path d="M277.067,1217.89C276.364,1216.82 279.875,1209.96 280.503,1209.87" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.3378,0.71005,-0.71005,1.3378,576.57,-1734.2)"><path d="M277.067,1217.89C276.364,1216.82 276.616,1214.58 277.244,1214.5" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.5146,0,0,1.5146,-333.58,-1712.7)"><path d="M269.661,1172.12C269.661,1172.12 269.438,1172.72 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.0737,-1.0682,1.0682,1.0737,-1493,-894.36)"><path d="M269.661,1172.12C269.661,1172.12 269.438,1172.72 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(0.69691,1.3447,-1.3447,0.69691,1491.3,-1111.9)"><path d="M268.451,1167.49C268.451,1167.49 269.438,1172.72 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(-0.84512,1.2569,-1.2569,-0.84512,1808.9,742.29)"><path d="M271.214,1169.57C271.429,1170.95 270.376,1174.32 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(0.95031,-1.646,1.3117,0.75729,-1672.5,-337.2)"><path d="M271.214,1169.57C270.437,1171.68 270.472,1175.45 270.845,1176.09" style="fill:none;stroke:var(--moss);stroke-width:4.59px;"/></g><g transform="matrix(1,0,0,1,-799.62,-1329.5)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(1,0,0,1,-761.02,-1360.5)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(1,0,0,1,-769.64,-1340.7)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(1,0,0,1,-753.9,-1328.5)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(1,0,0,1,-766.54,-1315.9)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-463.87,-840.89)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-481.36,-826.28)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(-0.47737,-0.44804,0.44804,-0.47737,-177.36,1173.6)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-488.35,-857.54)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-454.9,-851.64)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-468.51,-812.78)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-471.79,-851.55)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-468.05,-862.81)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-482.03,-820.89)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-486.11,-878.24)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-442.09,-842.26)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-496.25,-868.16)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(1.2699,0,0,1.2699,-1052.3,-1737.7)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.69862,0,0,0.69862,-549.21,-919.11)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.69862,0,0,0.69862,-535.86,-902.91)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-254.92,-417.77)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-267.93,-422.68)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-261.49,-427.63)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-208.32,-438.91)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-195.41,-466.34)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-208.76,-455.03)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-219.39,-461.17)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-188.13,-423.34)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-231.3,-420.33)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-230.51,-401.26)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-125.72,-261.97)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-119.53,-268.87)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-117.82,-252.82)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-105.47,-259.86)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-101.21,-272.28)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-129.48,-245.93)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-141.58,-226.27)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-82.382,-225.4)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g></svg><div class="opt-title">Present</div><div class="opt-desc">Click to select Yes</div></div>
+        <div class="opt-card illus-wrap" id="illus-plastoglobuli-absent"><svg viewBox="0 0 177 192"><g transform="matrix(3.8193,0,0,3.8193,-194.91,-687.15)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(1.5146,0,0,1.5146,-327.73,-1712.2)"><path d="M277.067,1217.89C277.067,1217.89 278.132,1209.88 277.518,1207.91" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.3378,0.71005,-0.71005,1.3378,546.85,-1717.4)"><path d="M277.067,1217.89C276.364,1216.82 279.875,1209.96 280.503,1209.87" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.3378,0.71005,-0.71005,1.3378,576.57,-1734.2)"><path d="M277.067,1217.89C276.364,1216.82 276.616,1214.58 277.244,1214.5" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.5146,0,0,1.5146,-333.58,-1712.7)"><path d="M269.661,1172.12C269.661,1172.12 269.438,1172.72 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(1.0737,-1.0682,1.0682,1.0737,-1493,-894.36)"><path d="M269.661,1172.12C269.661,1172.12 269.438,1172.72 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(0.69691,1.3447,-1.3447,0.69691,1491.3,-1111.9)"><path d="M268.451,1167.49C268.451,1167.49 269.438,1172.72 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(-0.84512,1.2569,-1.2569,-0.84512,1808.9,742.29)"><path d="M271.214,1169.57C271.429,1170.95 270.376,1174.32 270.749,1174.96" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g><g transform="matrix(0.95031,-1.646,1.3117,0.75729,-1672.5,-337.2)"><path d="M271.214,1169.57C270.437,1171.68 270.472,1175.45 270.845,1176.09" style="fill:none;stroke:var(--moss);stroke-width:4.59px;"/></g><g transform="matrix(1,0,0,1,-799.62,-1329.5)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(1,0,0,1,-761.02,-1360.5)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(1,0,0,1,-769.64,-1340.7)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(1,0,0,1,-753.9,-1328.5)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(1,0,0,1,-766.54,-1315.9)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-463.87,-840.89)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-481.36,-826.28)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(-0.47737,-0.44804,0.44804,-0.47737,-177.36,1173.6)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-488.35,-857.54)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-454.9,-851.64)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-468.51,-812.78)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-471.79,-851.55)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-468.05,-862.81)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-482.03,-820.89)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-486.11,-878.24)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-442.09,-842.26)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.6547,0,0,0.6547,-496.25,-868.16)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(1.2699,0,0,1.2699,-1052.3,-1737.7)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.69862,0,0,0.69862,-549.21,-919.11)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.69862,0,0,0.69862,-535.86,-902.91)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-254.92,-417.77)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-267.93,-422.68)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-261.49,-427.63)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-208.32,-438.91)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-195.41,-466.34)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-208.76,-455.03)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-219.39,-461.17)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-188.13,-423.34)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-231.3,-420.33)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.36582,0,0,0.36582,-230.51,-401.26)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-125.72,-261.97)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-119.53,-268.87)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-117.82,-252.82)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-105.47,-259.86)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-101.21,-272.28)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-129.48,-245.93)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-141.58,-226.27)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g><g transform="matrix(0.23209,0,0,0.23312,-82.382,-225.4)"><circle cx="867.67" cy="1436.55" r="3.757" style="fill:var(--ink);"/></g></svg><div class="opt-title">Absent</div><div class="opt-desc">Click to select No</div></div>
       </div>
       <div class="pill-group" data-field="plastoglobuli">
         <button type="button" class="pill" data-value="yes">Yes</button>
@@ -418,8 +455,9 @@
     <div class="step" data-step-id="step-nucleomorph">
       <div class="step-title">Nucleomorph</div>
       <div class="step-hint">A vestigial nucleus from secondary endosymbiosis — present in some lineages (e.g. cryptophytes, chlorarachniophytes), never in others.</div>
-      <div class="card-grid" style="max-width:180px;">
-        <div class="opt-card" id="illus-nucleomorph"><svg viewBox="0 0 177 192"><g transform="matrix(3.8193,0,0,3.8193,-194.91,-687.15)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(0.31371,0.47676,-0.55457,0.36491,689.5,-1117.5)"><path d="M1103.42,1746.72C1103.42,1746.72 1106.2,1738.98 1111.64,1742.36C1117.08,1745.74 1119.65,1749.6 1119.65,1749.6C1119.65,1749.6 1124.4,1755.11 1135.35,1757.16C1145.19,1759.01 1146.83,1758.26 1146.83,1758.26C1146.83,1758.26 1148.42,1758.52 1154.79,1753.19C1159.41,1749.31 1159.14,1747.24 1159.02,1744.38C1158.87,1740.63 1153.06,1733.66 1150.76,1732.42C1148.98,1731.46 1141.67,1725.77 1131.96,1729.59C1131.96,1729.59 1128.95,1730.67 1119.05,1735.8C1109.14,1740.93 1106.1,1734.51 1109.77,1728.75" style="fill:var(--ink-soft);stroke:var(--ink);stroke-width:2.08px;"/></g></svg><div class="opt-title">Present</div><div class="opt-desc">Click to select Yes</div></div>
+      <div class="card-grid" style="max-width:380px;">
+        <div class="opt-card illus-wrap" id="illus-nucleomorph"><svg viewBox="0 0 177 192"><g transform="matrix(3.8193,0,0,3.8193,-194.91,-687.15)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(0.31371,0.47676,-0.55457,0.36491,689.5,-1117.5)"><path d="M1103.42,1746.72C1103.42,1746.72 1106.2,1738.98 1111.64,1742.36C1117.08,1745.74 1119.65,1749.6 1119.65,1749.6C1119.65,1749.6 1124.4,1755.11 1135.35,1757.16C1145.19,1759.01 1146.83,1758.26 1146.83,1758.26C1146.83,1758.26 1148.42,1758.52 1154.79,1753.19C1159.41,1749.31 1159.14,1747.24 1159.02,1744.38C1158.87,1740.63 1153.06,1733.66 1150.76,1732.42C1148.98,1731.46 1141.67,1725.77 1131.96,1729.59C1131.96,1729.59 1128.95,1730.67 1119.05,1735.8C1109.14,1740.93 1106.1,1734.51 1109.77,1728.75" style="fill:var(--ink-soft);stroke:var(--ink);stroke-width:2.08px;"/></g></svg><div class="opt-title">Present</div><div class="opt-desc">Click to select Yes</div></div>
+        <div class="opt-card illus-wrap" id="illus-nucleomorph-absent"><svg viewBox="0 0 177 192"><g transform="matrix(3.8193,0,0,3.8193,-194.91,-687.15)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g><g transform="matrix(0.31371,0.47676,-0.55457,0.36491,689.5,-1117.5)"><path d="M1103.42,1746.72C1103.42,1746.72 1106.2,1738.98 1111.64,1742.36C1117.08,1745.74 1119.65,1749.6 1119.65,1749.6C1119.65,1749.6 1124.4,1755.11 1135.35,1757.16C1145.19,1759.01 1146.83,1758.26 1146.83,1758.26C1146.83,1758.26 1148.42,1758.52 1154.79,1753.19C1159.41,1749.31 1159.14,1747.24 1159.02,1744.38C1158.87,1740.63 1153.06,1733.66 1150.76,1732.42C1148.98,1731.46 1141.67,1725.77 1131.96,1729.59C1131.96,1729.59 1128.95,1730.67 1119.05,1735.8C1109.14,1740.93 1106.1,1734.51 1109.77,1728.75" style="fill:var(--ink-soft);stroke:var(--ink);stroke-width:2.08px;"/></g></svg><div class="opt-title">Absent</div><div class="opt-desc">Click to select No</div></div>
       </div>
       <div class="pill-group" data-field="nucleomorph_present">
         <button type="button" class="pill" data-value="yes">Yes</button>
@@ -441,7 +479,7 @@
     <!-- STEP: image -->
     <div class="step" data-step-id="step-image">
       <div class="step-title">Screenshot of the figure</div>
-      <div class="step-hint">Click the box, then paste (Ctrl+V/Cmd+V) — or browse a file. Max 5 MB.</div>
+      <div class="step-hint">Click the box, then paste (Ctrl+V/Cmd+V) — or browse a file. Max 5 MB. If the image won't paste because it's too large, try zooming out or lightly compressing it before pasting.</div>
       <div class="paste-box" id="pasteBox" tabindex="0">
         <span class="paste-empty" id="pasteBoxEmpty">Click here, then paste an image<br><button type="button" id="browseBtn" class="browse-btn">Choose file instead</button></span>
         <img id="pastePreview" style="display:none;">
@@ -449,19 +487,19 @@
       <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
       <div id="pasteStatus" class="hint-inline" style="display:block; margin-bottom:14px;"></div>
       <button type="button" id="clearImageBtn" class="browse-btn" style="display:none; color:var(--danger); margin-bottom:14px;">Remove image</button>
-      <label for="image_url">Or a link to the figure</label>
-      <input type="text" id="image_url" placeholder="e.g. Fig. 3B, or a URL">
     </div>
 
     <!-- STEP: review -->
     <div class="step" data-step-id="step-review">
       <div class="step-title">Review &amp; submit</div>
+      <div class="step-hint">Click any row to go back and correct it.</div>
       <div id="reviewSummary"></div>
       <div class="status-msg" id="statusMsg"></div>
     </div>
 
   </form>
 
+  <div id="stepValidationMsg"></div>
   <div class="nav-row">
     <button type="button" class="nav-btn ghost" id="backBtn">Back</button>
     <button type="button" class="nav-btn primary" id="nextBtn">Next</button>
@@ -505,6 +543,14 @@ try {
   if (savedEmail) document.getElementById('submitter_email').value = savedEmail;
 } catch(storageErr){ /* private browsing or storage disabled — form just starts blank */ }
 
+// ---------- required text inputs: clear the "missing" highlight as the user fixes it ----------
+document.querySelectorAll('input[required], textarea[required]').forEach(el => {
+  el.addEventListener('input', () => {
+    el.classList.remove('field-missing');
+    clearStepValidationMsg();
+  });
+});
+
 // ---------- pill groups ----------
 document.querySelectorAll('.pill-group').forEach(group => {
   const field = group.getAttribute('data-field');
@@ -514,6 +560,8 @@ document.querySelectorAll('.pill-group').forEach(group => {
     group.querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
     btn.classList.add('selected');
     answers[field] = btn.getAttribute('data-value');
+    group.classList.remove('field-missing');
+    clearStepValidationMsg();
     handleFieldChange(field);
   });
 });
@@ -527,6 +575,8 @@ document.querySelectorAll('.card-grid[data-field]').forEach(grid => {
     grid.querySelectorAll('.opt-card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
     answers[field] = card.getAttribute('data-value');
+    grid.classList.remove('field-missing');
+    clearStepValidationMsg();
     handleFieldChange(field);
   });
 });
@@ -536,29 +586,38 @@ function showSub(id, show){
   if (el) el.classList.toggle('visible', !!show);
 }
 
+// fields with a card-grid/pill-group "other" option that reveals a free-text specify box
+const OTHER_FIELD_SUBS = {
+  method: 'sub-method-other',
+  chloroplast_morphology: 'sub-chloroplast-other',
+  pyrenoid_class: 'sub-pyrenoid-other',
+  matrix_shape: 'sub-matrix-other',
+  starch_morphology: 'sub-starch-other',
+  barrier_membrane_subtype: 'sub-membrane-other',
+  barrier_membrane_morphology: 'sub-membrane-morphology-other',
+};
+
 function handleFieldChange(field){
+  if (OTHER_FIELD_SUBS[field]){
+    showSub(OTHER_FIELD_SUBS[field], answers[field] === 'other');
+  }
   if (field === 'presence_call'){
     recomputeVisibleSteps();
   }
   if (field === 'pyrenoid_class'){
-    showSub('sub-pyrenoid-other', answers.pyrenoid_class === 'other');
     showSub('sub-position', answers.pyrenoid_class === 'stalked' || answers.pyrenoid_class === 'bulged');
   }
-  if (field === 'traversing_membranes'){
-    showSub('sub-traversing', answers.traversing_membranes === 'present');
-  }
   if (field === 'membrane_type'){
+    answers.traversing_membranes = !answers.membrane_type ? null : (answers.membrane_type === 'naked' ? 'absent' : 'present');
     document.getElementById('sub-continuity').style.display =
       ['sheet','fenestrated','curved'].includes(answers.membrane_type) ? '' : 'none';
+    showSub('sub-traversing-extent', !!answers.membrane_type && answers.membrane_type !== 'naked');
   }
   if (field === 'carbohydrate_present'){
     showSub('sub-carb', answers.carbohydrate_present === 'yes');
   }
   if (field === 'membrane_barrier_present'){
     showSub('sub-membrane', answers.membrane_barrier_present === 'yes');
-  }
-  if (field === 'barrier_membrane_subtype'){
-    showSub('sub-membrane-other', answers.barrier_membrane_subtype === 'other');
   }
   if (field === 'plastoglobuli'){
     showSub('sub-plastoglobuli', answers.plastoglobuli === 'yes');
@@ -572,29 +631,48 @@ function handleFieldChange(field){
 const DETAIL_STEPS = ['step-chloroplast','step-location','step-matrix','step-traversing','step-carb','step-shell','step-membrane','step-plastoglobuli','step-nucleomorph'];
 let stepOrder = [];
 let currentIndex = 0;
+// Furthest step reached so far — lets the trail jump forward again (e.g. back to Review) after going back to fix something.
+let maxVisitedIndex = 0;
 
 function recomputeVisibleSteps(){
   const base = ['step-submitter','step-taxonomy','step-source','step-presence'];
   const tail = ['step-notes','step-image','step-review'];
   stepOrder = answers.presence_call === 'present' ? base.concat(DETAIL_STEPS, tail) : base.concat(tail);
+  // step composition changed — indices beyond the current step no longer mean the same thing
+  maxVisitedIndex = Math.min(maxVisitedIndex, currentIndex);
 }
 recomputeVisibleSteps();
 
 function renderTrail(){
   const trail = document.getElementById('trail');
   trail.innerHTML = stepOrder.map((id, i) => {
-    const cls = i < currentIndex ? 'done' : (i === currentIndex ? 'current' : '');
-    return `<div class="trail-dot ${cls}"></div>`;
+    let cls = '';
+    if (i === currentIndex) cls = 'current';
+    else if (i <= maxVisitedIndex) cls = 'done';
+    const clickable = i <= maxVisitedIndex && i !== currentIndex;
+    return `<div class="trail-dot ${cls}" data-index="${i}" title="${clickable ? 'Go to this step' : ''}"></div>`;
   }).join('');
 }
+
+document.getElementById('trail').addEventListener('click', (e) => {
+  const dot = e.target.closest('.trail-dot');
+  if (!dot) return;
+  const idx = parseInt(dot.getAttribute('data-index'), 10);
+  if (idx <= maxVisitedIndex && idx !== currentIndex){
+    currentIndex = idx;
+    showStep(currentIndex);
+  }
+});
 
 function showStep(index){
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
   const id = stepOrder[index];
   const el = document.querySelector(`.step[data-step-id="${id}"]`);
   if (el) el.classList.add('active');
+  maxVisitedIndex = Math.max(maxVisitedIndex, index);
   document.getElementById('backBtn').disabled = index === 0;
   document.getElementById('nextBtn').textContent = index === stepOrder.length - 1 ? 'Submit' : 'Next';
+  clearStepValidationMsg();
   if (id === 'step-review') buildReview();
   renderTrail();
 }
@@ -603,8 +681,73 @@ document.getElementById('backBtn').addEventListener('click', () => {
   if (currentIndex > 0){ currentIndex--; showStep(currentIndex); }
 });
 
+// Steps whose required fields are exempt from the "complete this before continuing" check
+// (strain/isolate and cell type are explicitly optional — often not reported in the source paper).
+const VALIDATION_EXEMPT_IDS = new Set(['strain', 'cell_type_context']);
+
+function clearStepValidationMsg(){
+  document.getElementById('stepValidationMsg').textContent = '';
+}
+
+function isVisible(el){
+  return el.offsetParent !== null;
+}
+
+function getMissingFields(stepEl){
+  const missing = [];
+  stepEl.querySelectorAll('input[required], textarea[required]').forEach(el => {
+    if (VALIDATION_EXEMPT_IDS.has(el.id)) return;
+    if (isVisible(el) && !el.value.trim()) missing.push(el);
+  });
+  stepEl.querySelectorAll('.pill-group[data-field]').forEach(group => {
+    if (!isVisible(group)) return;
+    const field = group.getAttribute('data-field');
+    if (!answers[field]) missing.push(group);
+  });
+  stepEl.querySelectorAll('.card-grid[data-field]').forEach(grid => {
+    if (!isVisible(grid)) return;
+    const field = grid.getAttribute('data-field');
+    if (!answers[field]) missing.push(grid);
+  });
+  return missing;
+}
+
 document.getElementById('nextBtn').addEventListener('click', async () => {
   const currentId = stepOrder[currentIndex];
+  const stepEl = document.querySelector(`.step[data-step-id="${currentId}"]`);
+  const nextBtn = document.getElementById('nextBtn');
+
+  // Auto-run lookups the user may have forgotten to trigger manually, before validating/advancing.
+  if (currentId === 'step-taxonomy' && fieldVal('species_name') && !taxonomyMeta.gbif_key){
+    nextBtn.disabled = true;
+    await matchTaxonomy();
+    nextBtn.disabled = false;
+  }
+  if (currentId === 'step-source' && fieldVal('doi') && !referenceMeta.title){
+    nextBtn.disabled = true;
+    await lookupDoi();
+    nextBtn.disabled = false;
+  }
+
+  if (currentId === 'step-image' && !pastedImageBlob){
+    document.getElementById('pasteBox').classList.add('field-missing');
+    document.getElementById('stepValidationMsg').textContent = 'Paste or upload an image of the figure before continuing.';
+    document.getElementById('pasteBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  if (currentId !== 'step-review'){
+    stepEl.querySelectorAll('.field-missing').forEach(el => el.classList.remove('field-missing'));
+    const missing = getMissingFields(stepEl);
+    if (missing.length){
+      missing.forEach(el => el.classList.add('field-missing'));
+      document.getElementById('stepValidationMsg').textContent = 'Please complete the highlighted fields before continuing.';
+      missing[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    clearStepValidationMsg();
+  }
+
   if (currentId === 'step-review'){
     await submitRecord();
     return;
@@ -617,24 +760,33 @@ document.getElementById('nextBtn').addEventListener('click', async () => {
 
 function buildReview(){
   const rows = [
-    ['Species', fieldVal('species_name')],
-    ['Reference', fieldVal('reference_citation')],
-    ['Presence', answers.presence_call || '—'],
-    ['Chloroplast shape', answers.chloroplast_morphology || '—'],
-    ['Location', answers.pyrenoid_class || '—'],
-    ['Matrix shape', answers.matrix_shape || '—'],
-    ['Traversing membranes', answers.traversing_membranes || '—'],
-    ['Membrane type', answers.membrane_type || '—'],
-    ['Carbohydrate barrier', answers.carbohydrate_present || '—'],
-    ['Shell', answers.shell_present || '—'],
-    ['Surrounding membrane', answers.membrane_barrier_present || '—'],
-    ['Plastoglobuli', answers.plastoglobuli || '—'],
-    ['Nucleomorph', answers.nucleomorph_present || '—'],
+    ['Species', fieldVal('species_name'), 'step-taxonomy'],
+    ['Reference', fieldVal('reference_citation'), 'step-source'],
+    ['Presence', answers.presence_call || '—', 'step-presence'],
+    ['Chloroplast shape', answers.chloroplast_morphology || '—', 'step-chloroplast'],
+    ['Location', answers.pyrenoid_class || '—', 'step-location'],
+    ['Matrix shape', answers.matrix_shape || '—', 'step-matrix'],
+    ['Traversing membranes', answers.traversing_membranes || '—', 'step-traversing'],
+    ['Membrane type', answers.membrane_type || '—', 'step-traversing'],
+    ['Carbohydrate barrier', answers.carbohydrate_present || '—', 'step-carb'],
+    ['Shell', answers.shell_present || '—', 'step-shell'],
+    ['Surrounding membrane', answers.membrane_barrier_present || '—', 'step-membrane'],
+    ['Plastoglobuli', answers.plastoglobuli || '—', 'step-plastoglobuli'],
+    ['Nucleomorph', answers.nucleomorph_present || '—', 'step-nucleomorph'],
   ];
-  document.getElementById('reviewSummary').innerHTML = rows.map(([k,v]) =>
-    `<div class="review-row"><span>${k}</span><span>${v}</span></div>`
+  document.getElementById('reviewSummary').innerHTML = rows.map(([k,v,stepId]) =>
+    `<div class="review-row" data-step-id="${stepId}"><span>${k}</span><span>${v}</span></div>`
   ).join('');
 }
+
+document.getElementById('reviewSummary').addEventListener('click', (e) => {
+  const row = e.target.closest('.review-row');
+  if (!row) return;
+  const idx = stepOrder.indexOf(row.getAttribute('data-step-id'));
+  if (idx === -1) return;
+  currentIndex = idx;
+  showStep(currentIndex);
+});
 
 // ---------- DOI / CrossRef lookup ----------
 let referenceMeta = { title: '', authors: '', year: null, journal: '' };
@@ -752,6 +904,8 @@ function acceptImageFile(file){
   pasteBoxEmpty.style.display = 'none';
   clearImageBtn.style.display = 'inline-block';
   pasteStatus.textContent = 'Ready to upload (' + humanSize(file.size) + ').';
+  pasteBox.classList.remove('field-missing');
+  clearStepValidationMsg();
 }
 pasteBox.addEventListener('paste', (e) => {
   const items = (e.clipboardData || window.clipboardData).items;
@@ -767,6 +921,23 @@ clearImageBtn.addEventListener('click', (e) => {
 });
 
 // ---------- submit ----------
+// Fields whose "Other" specify-box has no dedicated DB column — folded into ultrastructure_notes instead.
+function composeNotes(){
+  const parts = [fieldVal('ultrastructure_notes')];
+  const addOther = (label, field, inputId) => {
+    if (answers[field] === 'other'){
+      const val = fieldVal(inputId);
+      if (val) parts.push(label + ' (other): ' + val);
+    }
+  };
+  addOther('Method', 'method', 'method_other');
+  addOther('Chloroplast shape', 'chloroplast_morphology', 'chloroplast_morphology_other');
+  addOther('Matrix shape', 'matrix_shape', 'matrix_shape_other');
+  addOther('Starch morphology', 'starch_morphology', 'starch_morphology_other');
+  addOther('Membrane morphology', 'barrier_membrane_morphology', 'barrier_membrane_morphology_other');
+  return parts.filter(Boolean).join('\n');
+}
+
 async function submitRecord(){
   const statusEl = document.getElementById('statusMsg');
   const nextBtn = document.getElementById('nextBtn');
@@ -816,8 +987,8 @@ async function submitRecord(){
     barrier_membrane_morphology: answers.barrier_membrane_morphology || null,
     plastoglobuli: answers.plastoglobuli || null, plastoglobuli_location: fieldVal('plastoglobuli_location'),
     nucleomorph_present: answers.nucleomorph_present || null, nucleomorph_location: fieldVal('nucleomorph_location'),
-    ultrastructure_notes: fieldVal('ultrastructure_notes'),
-    image_url: fieldVal('image_url'), image_path,
+    ultrastructure_notes: composeNotes(),
+    image_path,
     kingdom: taxonomyMeta.kingdom || null, phylum: taxonomyMeta.phylum || null, class: taxonomyMeta.class_ || null,
     order_rank: taxonomyMeta.order_rank || null, family: taxonomyMeta.family || null, genus: taxonomyMeta.genus || null,
     gbif_key: taxonomyMeta.gbif_key || null, taxonomy_match_type: taxonomyMeta.match_type || null,
@@ -842,22 +1013,27 @@ async function submitRecord(){
 
 document.getElementById('startOverBtn').addEventListener('click', () => window.location.reload());
 
-function wireIllustrativeCard(cardId, field){
+function wireIllustrativeCard(cardId, field, value){
   const card = document.getElementById(cardId);
   if (!card) return;
   card.addEventListener('click', () => {
     const group = card.closest('.step').querySelector(`.pill-group[data-field="${field}"]`);
     if (!group) return;
     group.querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
-    group.querySelector('.pill[data-value="yes"]').classList.add('selected');
-    answers[field] = 'yes';
+    group.querySelector(`.pill[data-value="${value}"]`).classList.add('selected');
+    answers[field] = value;
+    group.classList.remove('field-missing');
     handleFieldChange(field);
   });
 }
-wireIllustrativeCard('illus-shell', 'shell_present');
-wireIllustrativeCard('illus-membrane', 'membrane_barrier_present');
-wireIllustrativeCard('illus-plastoglobuli', 'plastoglobuli');
-wireIllustrativeCard('illus-nucleomorph', 'nucleomorph_present');
+wireIllustrativeCard('illus-shell', 'shell_present', 'yes');
+wireIllustrativeCard('illus-shell-absent', 'shell_present', 'no');
+wireIllustrativeCard('illus-membrane', 'membrane_barrier_present', 'yes');
+wireIllustrativeCard('illus-membrane-absent', 'membrane_barrier_present', 'no');
+wireIllustrativeCard('illus-plastoglobuli', 'plastoglobuli', 'yes');
+wireIllustrativeCard('illus-plastoglobuli-absent', 'plastoglobuli', 'no');
+wireIllustrativeCard('illus-nucleomorph', 'nucleomorph_present', 'yes');
+wireIllustrativeCard('illus-nucleomorph-absent', 'nucleomorph_present', 'no');
 
 showStep(0);
 </script>
