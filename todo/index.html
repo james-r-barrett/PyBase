@@ -134,6 +134,23 @@
   .item-restore{ background: transparent; color: var(--moss-deep); border-color: var(--line); }
   .item-restore:hover{ background: var(--paper); border-color: var(--moss); }
   footer{ margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); }
+
+  select{
+    appearance: none;
+    -webkit-appearance: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    padding: 8px 34px 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%234B5A50' stroke-width='1.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  select:focus{ outline: 2px solid var(--moss); outline-offset: 1px; }
+  body.dark-mode select{
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239FAEA3' stroke-width='1.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
 </style>
 </head>
 <body>
@@ -171,11 +188,11 @@
 
   <div class="controls" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-top:16px; margin-bottom:20px;">
     <div id="resultMeta" style="margin:0;"></div>
-    <select id="sortSelect" style="font-family:'IBM Plex Mono', monospace; font-size:12.5px; padding:8px 10px; border:1px solid var(--line); border-radius:var(--radius); background:var(--surface); color:var(--ink);">
-      <option value="year_asc">Publication year — oldest first</option>
-      <option value="year_desc">Publication year — newest first</option>
-      <option value="added_asc">Date added — oldest first</option>
+    <select id="sortSelect">
       <option value="added_desc">Date added — newest first</option>
+      <option value="added_asc">Date added — oldest first</option>
+      <option value="year_desc">Publication year — newest first</option>
+      <option value="year_asc">Publication year — oldest first</option>
     </select>
   </div>
   <div id="results"></div>

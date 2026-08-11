@@ -91,14 +91,21 @@
     color: var(--ink);
   }
   #searchInput:focus{ outline: 2px solid var(--moss); outline-offset: 1px; }
-  select#divisionFilter{
+  select{
+    appearance: none;
+    -webkit-appearance: none;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 13px;
-    padding: 10px 12px;
+    padding: 10px 34px 10px 12px;
     border: 1px solid var(--line);
     border-radius: var(--radius);
-    background: var(--surface);
+    background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%234B5A50' stroke-width='1.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center;
     color: var(--ink);
+    cursor: pointer;
+  }
+  select:focus{ outline: 2px solid var(--moss); outline-offset: 1px; }
+  body.dark-mode select{
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239FAEA3' stroke-width='1.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   }
 
   #resultMeta{
@@ -207,6 +214,11 @@
     <input type="text" id="searchInput" placeholder="Search species, family, citation…">
     <select id="divisionFilter">
       <option value="">All divisions</option>
+    </select>
+    <select id="sortSelect">
+      <option value="species_asc">Species — A to Z</option>
+      <option value="submitted_desc">Newest submission</option>
+      <option value="submitted_asc">Oldest submission</option>
     </select>
   </div>
 
@@ -333,6 +345,14 @@ document.getElementById('results').addEventListener('click', (e) => {
   if (card) card.classList.toggle('expanded');
 });
 
+function sortRecords(records, mode){
+  const sorted = [...records];
+  if (mode === 'submitted_desc') sorted.sort((a, b) => (b.submitted_at || '').localeCompare(a.submitted_at || ''));
+  else if (mode === 'submitted_asc') sorted.sort((a, b) => (a.submitted_at || '').localeCompare(b.submitted_at || ''));
+  else sorted.sort((a, b) => (a.species_name || '').localeCompare(b.species_name || ''));
+  return sorted;
+}
+
 function applyFilters(){
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
   const division = document.getElementById('divisionFilter').value;
@@ -342,11 +362,12 @@ function applyFilters(){
     const haystack = [r.species_name, r.family, r.genus, r.reference_citation, r.reference_title, r.reference_authors].filter(Boolean).join(' ').toLowerCase();
     return haystack.includes(q);
   });
-  renderResults(filtered);
+  renderResults(sortRecords(filtered, document.getElementById('sortSelect').value));
 }
 
 document.getElementById('searchInput').addEventListener('input', applyFilters);
 document.getElementById('divisionFilter').addEventListener('change', applyFilters);
+document.getElementById('sortSelect').addEventListener('change', applyFilters);
 
 async function loadRecords(){
   const resultsEl = document.getElementById('results');
@@ -356,7 +377,7 @@ async function loadRecords(){
     let from = 0;
     const pageSize = 1000;
     while (true){
-      const { data: batch, error } = await supabaseClient.from('public_records').select('*').order('species_name', { ascending: true }).range(from, from + pageSize - 1);
+      const { data: batch, error } = await supabaseClient.from('public_records').select('*').range(from, from + pageSize - 1);
       if (error) throw error;
       data = data.concat(batch || []);
       if (!batch || batch.length < pageSize) break;
