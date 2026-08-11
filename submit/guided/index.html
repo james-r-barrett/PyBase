@@ -497,6 +497,14 @@ function fieldVal(id){
   return el ? el.value.trim() : '';
 }
 
+// Remembered from a previous submission on this device, if any — saves re-typing for repeat submitters.
+try {
+  const savedName = localStorage.getItem('pybase_submitter_name');
+  const savedEmail = localStorage.getItem('pybase_submitter_email');
+  if (savedName) document.getElementById('submitter_name').value = savedName;
+  if (savedEmail) document.getElementById('submitter_email').value = savedEmail;
+} catch(storageErr){ /* private browsing or storage disabled — form just starts blank */ }
+
 // ---------- pill groups ----------
 document.querySelectorAll('.pill-group').forEach(group => {
   const field = group.getAttribute('data-field');
@@ -818,6 +826,10 @@ async function submitRecord(){
   try {
     const { error } = await supabaseClient.from('submissions').insert([record]);
     if (error) throw error;
+    try {
+      localStorage.setItem('pybase_submitter_name', record.submitter_name);
+      localStorage.setItem('pybase_submitter_email', record.submitter_email);
+    } catch(storageErr){ /* private browsing or storage disabled — not worth failing the submission over */ }
     document.getElementById('wizardForm').style.display = 'none';
     document.querySelector('.trail').style.display = 'none';
     document.querySelector('.nav-row').style.display = 'none';
