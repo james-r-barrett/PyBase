@@ -455,6 +455,7 @@
       <div class="pill-group" data-field="plastoglobuli">
         <button type="button" class="pill" data-value="yes">Yes</button>
         <button type="button" class="pill" data-value="no">No</button>
+        <button type="button" class="pill lm-only-pill" data-value="unclear" style="display:none;">Unclear</button>
       </div>
       <div class="subfield" id="sub-plastoglobuli">
         <label for="plastoglobuli_location">Location</label>
@@ -473,6 +474,7 @@
       <div class="pill-group" data-field="nucleomorph_present">
         <button type="button" class="pill" data-value="yes">Yes</button>
         <button type="button" class="pill" data-value="no">No</button>
+        <button type="button" class="pill lm-only-pill" data-value="unclear" style="display:none;">Unclear</button>
       </div>
       <div class="subfield" id="sub-nucleomorph">
         <label for="nucleomorph_location">Location</label>
@@ -640,6 +642,17 @@ function handleFieldChange(field){
   }
   if (field === 'presence_call'){
     recomputeVisibleSteps();
+  }
+  if (field === 'method'){
+    const isLightMicroscopy = answers.method === 'light_microscopy';
+    document.querySelectorAll('.lm-only-pill').forEach(btn => {
+      btn.style.display = isLightMicroscopy ? '' : 'none';
+      if (!isLightMicroscopy && btn.classList.contains('selected')){
+        btn.classList.remove('selected');
+        const group = btn.closest('.pill-group');
+        if (group) delete answers[group.getAttribute('data-field')];
+      }
+    });
   }
   if (field === 'pyrenoid_class'){
     showSub('sub-position', answers.pyrenoid_class === 'stalked' || answers.pyrenoid_class === 'bulged');
