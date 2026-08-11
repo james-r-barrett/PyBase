@@ -164,6 +164,7 @@
 
   <div class="tabs" style="display:flex; gap:8px; margin-top:24px; flex-wrap:wrap;">
     <button type="button" class="tab-btn active" data-status="to_review">To-do</button>
+    <button type="button" class="tab-btn" data-status="in_progress">In progress</button>
     <button type="button" class="tab-btn" data-status="not_relevant">Not relevant</button>
     <button type="button" class="tab-btn" data-status="covered">Completed</button>
   </div>
@@ -233,6 +234,7 @@ function splitCitation(citation){
 
 let allItems = [];
 let currentStatus = 'to_review';
+let speciesByDoi = {};
 
 function sortItems(items, mode){
   const sorted = [...items];
@@ -251,6 +253,7 @@ function sortItems(items, mode){
 
 const STATUS_LABELS = {
   to_review: { noun: 'paper still to review', plural: 'papers still to review', empty: 'Nothing outstanding right now — check back later.' },
+  in_progress: { noun: 'paper in progress', plural: 'papers in progress', empty: 'Nothing in progress right now.' },
   not_relevant: { noun: 'item marked not relevant', plural: 'items marked not relevant', empty: 'Nothing has been marked not relevant.' },
   covered: { noun: 'completed item', plural: 'completed items', empty: 'Nothing marked complete yet.' },
 };
@@ -259,7 +262,7 @@ function updateTabCounts(){
   document.querySelectorAll('.tab-btn').forEach(btn => {
     const status = btn.getAttribute('data-status');
     const count = allItems.filter(i => i.status === status).length;
-    const label = { to_review: 'To-do', not_relevant: 'Not relevant', covered: 'Completed' }[status];
+    const label = { to_review: 'To-do', in_progress: 'In progress', not_relevant: 'Not relevant', covered: 'Completed' }[status];
     btn.textContent = `${label} (${count})`;
   });
 }
@@ -293,6 +296,11 @@ function renderItems(items){
     const submitHref = bareDoi ? '../submit/form/?doi=' + encodeURIComponent(bareDoi) : '../submit/form/';
     const wizardHref = bareDoi ? '../submit/guided/?doi=' + encodeURIComponent(bareDoi) : '../submit/guided/';
 
+    const loggedSpecies = bareDoi ? (speciesByDoi[bareDoi.toLowerCase()] || []) : [];
+    const loggedHtml = loggedSpecies.length
+      ? '<div class="item-notes">Already logged: ' + loggedSpecies.map(escapeHtml).join(', ') + '</div>'
+      : '';
+
     const logRow = `
       <div class="log-group">
         <span class="log-label">Log:</span>
@@ -304,6 +312,8 @@ function renderItems(items){
     let actions = '';
     if (item.status === 'to_review'){
       actions = logRow + `<button type="button" class="item-flag" data-flag-id="${escapeHtml(item.id)}">Not relevant</button>`;
+    } else if (item.status === 'in_progress'){
+      actions = logRow + `<button type="button" class="item-restore" data-cover-id="${escapeHtml(item.id)}">Mark fully covered</button>`;
     } else if (item.status === 'not_relevant'){
       actions = logRow + `<button type="button" class="item-restore" data-restore-id="${escapeHtml(item.id)}">Restore to to-do</button>`;
     }
@@ -314,11 +324,35 @@ function renderItems(items){
         <div class="item-body">
           <div class="item-citation">${citationHtml}</div>
           ${item.notes ? '<div class="item-notes">' + escapeHtml(item.notes) + '</div>' : ''}
+          ${loggedHtml}
         </div>
         ${actions ? '<div class="item-actions">' + actions + '</div>' : ''}
       </div>
     `;
   }).join('');
+}
+
+async function loadApprovedSpecies(){
+  try {
+    let rows = [];
+    let from = 0;
+    const pageSize = 1000;
+    while (true){
+      const { data, error } = await supabaseClient.from('approved_species_by_doi').select('*').range(from, from + pageSize - 1);
+      if (error) throw error;
+      rows = rows.concat(data || []);
+      if (!data || data.length < pageSize) break;
+      from += pageSize;
+    }
+    const map = {};
+    rows.forEach(r => {
+      if (!r.norm_doi || !r.species_name) return;
+      (map[r.norm_doi] = map[r.norm_doi] || []).push(r.species_name);
+    });
+    speciesByDoi = map;
+  } catch(err){
+    speciesByDoi = {};
+  }
 }
 
 async function loadQueue(){
@@ -336,6 +370,7 @@ async function loadQueue(){
       from += pageSize;
     }
     allItems = items;
+    await loadApprovedSpecies();
     renderCurrentTab();
   } catch(err){
     resultsEl.innerHTML = '<div class="empty">Could not load the list (' + escapeHtml(err.message || String(err)) + ').</div>';
@@ -355,7 +390,8 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 
 document.getElementById('results').addEventListener('click', async (e) => {
   const flagBtn = e.target.closest('.item-flag');
-  const restoreBtn = e.target.closest('.item-restore');
+  const restoreBtn = e.target.closest('.item-restore[data-restore-id]');
+  const coverBtn = e.target.closest('.item-restore[data-cover-id]');
 
   if (flagBtn){
     const id = flagBtn.getAttribute('data-flag-id');
@@ -388,6 +424,23 @@ document.getElementById('results').addEventListener('click', async (e) => {
       restoreBtn.disabled = false;
       restoreBtn.textContent = 'Restore to to-do';
       alert('Could not restore this item: ' + (err.message || String(err)));
+    }
+  }
+
+  if (coverBtn){
+    const id = coverBtn.getAttribute('data-cover-id');
+    coverBtn.disabled = true;
+    coverBtn.textContent = 'Marking…';
+    try {
+      const { error } = await supabaseClient.rpc('mark_literature_covered', { item_id: id });
+      if (error) throw error;
+      const item = allItems.find(i => i.id === id);
+      if (item) item.status = 'covered';
+      renderCurrentTab();
+    } catch(err){
+      coverBtn.disabled = false;
+      coverBtn.textContent = 'Mark fully covered';
+      alert('Could not mark this item covered: ' + (err.message || String(err)));
     }
   }
 });

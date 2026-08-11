@@ -344,6 +344,16 @@
           </label>
         </div>
       </div>
+      <div class="row single">
+        <div class="field">
+          <label for="reference_multi_species">Does this reference describe more than one species? <span class="req">*</span> <span class="hint">so a paper covering several species isn't marked done after just one is logged</span></label>
+          <select id="reference_multi_species" required>
+            <option value="">Select…</option>
+            <option value="false">No — single species</option>
+            <option value="true">Yes — multiple species</option>
+          </select>
+        </div>
+      </div>
     </fieldset>
 
     <fieldset>
@@ -1010,6 +1020,7 @@ form.addEventListener('submit', async (e) => {
     reference_citation: fieldVal('reference_citation'),
     paper_link: fieldVal('paper_link'),
     doi: fieldVal('doi'),
+    reference_multi_species: fieldVal('reference_multi_species') === 'true',
     presence_call: fieldVal('presence_call'),
     method: fieldVal('method'),
     is_unpublished: document.getElementById('is_unpublished').checked,
@@ -1057,7 +1068,7 @@ form.addEventListener('submit', async (e) => {
     taxonomy_match_type: taxonomyMeta.match_type || null
   };
 
-  if (!record.species_name || !record.reference_citation || !record.presence_call || !record.submitter_email){
+  if (!record.species_name || !record.reference_citation || !record.presence_call || !record.submitter_email || !fieldVal('reference_multi_species')){
     setStatus('Please fill in the required fields.', 'err');
     submitBtn.disabled = false;
     return;

@@ -205,6 +205,11 @@
         <input type="checkbox" id="is_unpublished" style="width:auto; margin:0;">
         Unpublished result <span class="hint-inline">your own unpublished data, not a formal paper</span>
       </label>
+      <label>Does this reference describe more than one species? <span class="hint-inline">so a paper covering several species isn't marked done after just one is logged</span></label>
+      <div class="pill-group" data-field="reference_multi_species">
+        <button type="button" class="pill" data-value="false">No — single species</button>
+        <button type="button" class="pill" data-value="true">Yes — multiple species</button>
+      </div>
     </div>
 
     <!-- STEP: presence -->
@@ -797,6 +802,7 @@ function buildReview(){
   const rows = [
     ['Species', fieldVal('species_name'), 'step-taxonomy'],
     ['Reference', fieldVal('reference_citation'), 'step-source'],
+    ['Multiple species in reference?', answers.reference_multi_species === 'true' ? 'Yes' : (answers.reference_multi_species === 'false' ? 'No' : '—'), 'step-source'],
     ['Presence', answers.presence_call || '—', 'step-presence'],
     ['Chloroplast shape', answers.chloroplast_morphology || '—', 'step-chloroplast'],
     ['Location', answers.pyrenoid_class || '—', 'step-location'],
@@ -998,6 +1004,7 @@ async function submitRecord(){
     submitter_email,
     species_name, strain: fieldVal('strain'),
     reference_citation, doi: fieldVal('doi'), paper_link: fieldVal('paper_link'),
+    reference_multi_species: answers.reference_multi_species === 'true',
     reference_title: referenceMeta.title || null, reference_authors: referenceMeta.authors || null,
     reference_year: referenceMeta.year || null, reference_journal: referenceMeta.journal || null,
     is_unpublished: document.getElementById('is_unpublished').checked,
