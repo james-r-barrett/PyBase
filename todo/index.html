@@ -284,6 +284,7 @@ function renderItems(items){
 
   resultsEl.innerHTML = items.map(item => {
     const bareDoi = item.doi ? item.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '') : '';
+    const yearBadge = item.pub_year ? '<span style="font-family:\'IBM Plex Mono\', monospace; font-size:11px; color:var(--ink-soft); margin-right:8px;">' + item.pub_year + '</span>' : '';
     const { authorsHtml, restHtml } = splitCitation(item.citation);
     const titleLine = bareDoi ? '<a href="https://doi.org/' + encodeURIComponent(bareDoi) + '" target="_blank" rel="noopener">' + restHtml + '</a>' : restHtml;
     const citationHtml = authorsHtml
@@ -291,7 +292,6 @@ function renderItems(items){
       : '<div class="item-title">' + yearBadge + titleLine + '</div>';
     const submitHref = bareDoi ? '../submit/form/?doi=' + encodeURIComponent(bareDoi) : '../submit/form/';
     const wizardHref = bareDoi ? '../submit/guided/?doi=' + encodeURIComponent(bareDoi) : '../submit/guided/';
-    const yearBadge = item.pub_year ? '<span style="font-family:\'IBM Plex Mono\', monospace; font-size:11px; color:var(--ink-soft); margin-right:8px;">' + item.pub_year + '</span>' : '';
 
     const logRow = `
       <div class="log-group">
