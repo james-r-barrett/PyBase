@@ -249,8 +249,8 @@
             </g>
           </g>
         </svg>
-        <div class="example-title">Central</div>
-        <div class="example-desc">Not in contact with the chloroplast envelope — e.g. Chlamydomonas, Porphyridium, Thalassiosira. Shown here across several chloroplast shapes.</div>
+        <div class="example-title">Central <span style="color:var(--ink-soft); font-weight:400;">(embedded)</span></div>
+        <div class="example-desc">Not in contact with the chloroplast envelope — e.g. Chlamydomonas, Porphyridium, Thalassiosira. Shown here across several chloroplast shapes. Also called "embedded" in some literature.</div>
       </div>
       <div class="example-card">
         <svg viewBox="0 0 153 192">
@@ -404,7 +404,7 @@
   <!-- ============ 04: TRAVERSING MEMBRANES ============ -->
   <section id="traversing">
     <div class="section-head"><span class="section-num">04</span><h2>Traversing membranes</h2></div>
-    <p class="section-note">Whether membranes penetrate through the matrix itself, or approach it closely. These are the common categories, including an explicit "Absent" (naked) option for when no membrane traverses the matrix at all.</p>
+    <p class="section-note">Whether membranes penetrate through the matrix itself, or approach it closely. These are the common categories, including an explicit "Absent" (naked) option for when no membrane traverses the matrix at all. More than one can apply — select all that fit, e.g. an invagination that also looks fenestrated in section.</p>
 
     <div class="card-grid">
       <div class="example-card">
@@ -579,25 +579,11 @@
         <div class="example-desc">Adjacent, more amorphous features.</div>
       </div>
     </div>
-    <div class="subnote"><b>Coverage:</b> complete, or partial — e.g. multiple granules that don’t fully cover the surface, or a capping vesicle that structurally can’t (extra-chloroplastic + bulging).</div>
+    <div class="subnote"><b>Coverage:</b> judged relative to the full 360° circumference of the matrix, in cross-section — not against a "complete" ideal. Bucketed as &lt;25%, 25–50%, 50–75%, or 75%+. Full coverage is essentially impossible for stalked/bulged pyrenoids, since the stalk itself is never covered — so don't expect the top bucket there.</div>
 
     <style>
       #barrier .example-card svg{ width:auto; height:130px; max-width:100%; margin:0 auto; display:block; }
     </style>
-
-    <h3>Shell</h3>
-    <div class="card-grid" style="max-width:220px;">
-      <div class="example-card">
-        <svg viewBox="0 0 124 192">
-          <g transform="matrix(1.2832,-0.50276,1.326,3.3842,-304.11,-559.85)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g>
-          <g transform="matrix(1,0,0,1,-637.76,-1322.1)"><path d="M677.366,1358.74C677.366,1358.74 678.845,1364.16 686.46,1368.78C694.075,1373.39 719.575,1404.9 723.514,1432.96C723.514,1432.96 725.185,1441.9 724.619,1449.41C724.053,1456.91 720.537,1459.52 728.082,1469.93" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g>
-          <g transform="matrix(-0.68998,0.72383,0.72383,0.68998,-479.25,-1388.7)"><path d="M678.956,1357.16C678.956,1357.16 680.481,1361.27 682.221,1363.64C683.844,1365.85 686.113,1367.71 689.788,1369.94C697.403,1374.56 719.575,1404.9 723.514,1432.96C723.514,1432.96 725.185,1441.9 724.619,1449.41C724.053,1456.91 720.355,1457.31 724.002,1471.55" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g>
-        </svg>
-        <div class="example-title">Present</div>
-        <div class="example-desc">Thin protein layer — often hard to observe. Only designate if it’s clearly visible.</div>
-      </div>
-    </div>
-    <div class="further">Reference: Shimakawa et al. (2024) Cell.</div>
 
     <h3>Surrounding membrane</h3>
     <div class="card-grid" style="max-width:220px;">
@@ -613,6 +599,20 @@
     </div>
     <div class="subnote"><b>Origin:</b> thylakoid / envelope / other — if other, specify.</div>
     <div class="subnote"><b>Morphology:</b> appressed (flat against the matrix) / curved / other.</div>
+
+    <h3>Shell</h3>
+    <div class="card-grid" style="max-width:220px;">
+      <div class="example-card">
+        <svg viewBox="0 0 124 192">
+          <g transform="matrix(1.2832,-0.50276,1.326,3.3842,-304.11,-559.85)"><circle cx="74.108" cy="204.048" r="13.324" style="fill:var(--ochre);"/></g>
+          <g transform="matrix(1,0,0,1,-637.76,-1322.1)"><path d="M677.366,1358.74C677.366,1358.74 678.845,1364.16 686.46,1368.78C694.075,1373.39 719.575,1404.9 723.514,1432.96C723.514,1432.96 725.185,1441.9 724.619,1449.41C724.053,1456.91 720.537,1459.52 728.082,1469.93" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g>
+          <g transform="matrix(-0.68998,0.72383,0.72383,0.68998,-479.25,-1388.7)"><path d="M678.956,1357.16C678.956,1357.16 680.481,1361.27 682.221,1363.64C683.844,1365.85 686.113,1367.71 689.788,1369.94C697.403,1374.56 719.575,1404.9 723.514,1432.96C723.514,1432.96 725.185,1441.9 724.619,1449.41C724.053,1456.91 720.355,1457.31 724.002,1471.55" style="fill:none;stroke:var(--moss);stroke-width:5.21px;"/></g>
+        </svg>
+        <div class="example-title">Present</div>
+        <div class="example-desc">Thin protein layer — often hard to observe, and rare to confidently designate. Only designate if it's clearly visible.</div>
+      </div>
+    </div>
+    <div class="further">Reference: Shimakawa et al. (2024) Cell.</div>
   </section>
 
   <!-- ============ 06: PLASTOGLOBULI ============ -->

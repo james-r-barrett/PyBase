@@ -295,7 +295,7 @@ function renderResults(records){
     if (r.starch_location) rows.push(['Starch location', r.starch_location.replace(/_/g,' ')]);
     if (r.starch_count) rows.push(['Starch layers', r.starch_count.replace('_plus','+')]);
     if (r.starch_morphology) rows.push(['Starch morphology', r.starch_morphology]);
-    if (r.starch_coverage) rows.push(['Starch coverage', r.starch_coverage]);
+    if (r.starch_coverage) rows.push(['Starch coverage', ({lt25:'<25%', '25_50':'25–50%', '50_75':'50–75%', gt75:'75%+'})[r.starch_coverage] || r.starch_coverage]);
     if (r.shell_present) rows.push(['Shell present', r.shell_present]);
     if (r.membrane_barrier_present) rows.push(['Surrounding membrane present', r.membrane_barrier_present]);
     if (r.barrier_membrane_subtype) rows.push(['Surrounding membrane origin', r.barrier_membrane_subtype.split(',').map(v => v.trim() === 'other' ? (r.barrier_membrane_subtype_other || 'other') : v.trim()).join(', ')]);
