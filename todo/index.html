@@ -342,7 +342,6 @@ document.getElementById('results').addEventListener('click', async (e) => {
 
   if (flagBtn){
     const id = flagBtn.getAttribute('data-flag-id');
-    if (!confirm('Mark this reference as not relevant? It moves to the Not relevant tab — nothing is deleted.')) return;
     flagBtn.disabled = true;
     flagBtn.textContent = 'Flagging…';
     try {
