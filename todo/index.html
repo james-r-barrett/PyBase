@@ -97,7 +97,8 @@
   }
   .item-body{ flex:1; min-width: 220px; }
   .item-citation{ font-size: 14.5px; color: var(--ink); }
-  .item-citation a{ color: var(--moss-deep); }
+  .item-authors{ margin-bottom: 2px; }
+  .item-title a{ color: var(--moss-deep); }
   .item-notes{
     font-family:'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--ochre); margin-top: 6px;
   }
@@ -221,12 +222,13 @@ function safeInlineHtml(str){
 }
 
 // Scan-added citations are a single "Authors (Year). Title. Journal." string — split off the
-// authors+year so they can be bolded, leaving the title (and any embedded italics) plain.
-function formatCitationHtml(citation){
+// authors+year from the title/journal remainder so callers can lay them out on separate lines
+// (bold authors, then the linked title on its own line).
+function splitCitation(citation){
   const str = citation || '';
   const m = str.match(/^(.*?\(\d{4}[a-z]?\)\.)\s*([\s\S]*)$/);
-  if (!m) return safeInlineHtml(str);
-  return '<b>' + safeInlineHtml(m[1]) + '</b> ' + safeInlineHtml(m[2]);
+  if (!m) return { authorsHtml: '', restHtml: safeInlineHtml(str) };
+  return { authorsHtml: safeInlineHtml(m[1]), restHtml: safeInlineHtml(m[2]) };
 }
 
 let allItems = [];
@@ -282,7 +284,11 @@ function renderItems(items){
 
   resultsEl.innerHTML = items.map(item => {
     const bareDoi = item.doi ? item.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '') : '';
-    const doiLink = bareDoi ? '<a href="https://doi.org/' + encodeURIComponent(bareDoi) + '" target="_blank" rel="noopener">' + formatCitationHtml(item.citation) + '</a>' : formatCitationHtml(item.citation);
+    const { authorsHtml, restHtml } = splitCitation(item.citation);
+    const titleLine = bareDoi ? '<a href="https://doi.org/' + encodeURIComponent(bareDoi) + '" target="_blank" rel="noopener">' + restHtml + '</a>' : restHtml;
+    const citationHtml = authorsHtml
+      ? '<div class="item-authors">' + yearBadge + '<b>' + authorsHtml + '</b></div><div class="item-title">' + titleLine + '</div>'
+      : '<div class="item-title">' + yearBadge + titleLine + '</div>';
     const submitHref = bareDoi ? '../submit/form/?doi=' + encodeURIComponent(bareDoi) : '../submit/form/';
     const wizardHref = bareDoi ? '../submit/guided/?doi=' + encodeURIComponent(bareDoi) : '../submit/guided/';
     const yearBadge = item.pub_year ? '<span style="font-family:\'IBM Plex Mono\', monospace; font-size:11px; color:var(--ink-soft); margin-right:8px;">' + item.pub_year + '</span>' : '';
@@ -306,7 +312,7 @@ function renderItems(items){
     return `
       <div class="item" data-id="${escapeHtml(item.id)}">
         <div class="item-body">
-          <div class="item-citation">${yearBadge}${doiLink}</div>
+          <div class="item-citation">${citationHtml}</div>
           ${item.notes ? '<div class="item-notes">' + escapeHtml(item.notes) + '</div>' : ''}
         </div>
         ${actions ? '<div class="item-actions">' + actions + '</div>' : ''}
