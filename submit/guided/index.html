@@ -409,7 +409,8 @@
         <div class="field-row">
           <div>
             <label>Origin</label>
-            <div class="pill-group" data-field="barrier_membrane_subtype">
+            <div class="hint-inline" style="display:block; margin:-4px 0 8px;">Select all that apply — e.g. thylakoid on one side, envelope on another.</div>
+            <div class="pill-group" data-field="barrier_membrane_subtype" data-multi="true">
               <button type="button" class="pill" data-value="thylakoid">Thylakoid</button>
               <button type="button" class="pill" data-value="envelope">Envelope</button>
               <button type="button" class="pill" data-value="other">Other</button>
@@ -556,12 +557,21 @@ document.querySelectorAll('input[required], textarea[required]').forEach(el => {
 // ---------- pill groups ----------
 document.querySelectorAll('.pill-group').forEach(group => {
   const field = group.getAttribute('data-field');
+  const multi = group.hasAttribute('data-multi');
   group.addEventListener('click', (e) => {
     const btn = e.target.closest('.pill');
     if (!btn) return;
-    group.querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
-    btn.classList.add('selected');
-    answers[field] = btn.getAttribute('data-value');
+    const value = btn.getAttribute('data-value');
+    if (multi){
+      const selected = new Set(Array.isArray(answers[field]) ? answers[field] : []);
+      if (selected.has(value)) selected.delete(value); else selected.add(value);
+      btn.classList.toggle('selected');
+      answers[field] = Array.from(selected);
+    } else {
+      group.querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
+      btn.classList.add('selected');
+      answers[field] = value;
+    }
     group.classList.remove('field-missing');
     clearStepValidationMsg();
     handleFieldChange(field);
@@ -601,7 +611,8 @@ const OTHER_FIELD_SUBS = {
 
 function handleFieldChange(field){
   if (OTHER_FIELD_SUBS[field]){
-    showSub(OTHER_FIELD_SUBS[field], answers[field] === 'other');
+    const val = answers[field];
+    showSub(OTHER_FIELD_SUBS[field], Array.isArray(val) ? val.includes('other') : val === 'other');
   }
   if (field === 'presence_call'){
     recomputeVisibleSteps();
@@ -704,7 +715,8 @@ function getMissingFields(stepEl){
   stepEl.querySelectorAll('.pill-group[data-field]').forEach(group => {
     if (!isVisible(group)) return;
     const field = group.getAttribute('data-field');
-    if (!answers[field]) missing.push(group);
+    const val = answers[field];
+    if (Array.isArray(val) ? val.length === 0 : !val) missing.push(group);
   });
   stepEl.querySelectorAll('.card-grid[data-field]').forEach(grid => {
     if (!isVisible(grid)) return;
@@ -984,7 +996,7 @@ async function submitRecord(){
     starch_morphology: answers.starch_morphology || null, starch_coverage: answers.starch_coverage || null,
     shell_present: answers.shell_present || null,
     membrane_barrier_present: answers.membrane_barrier_present || null,
-    barrier_membrane_subtype: answers.barrier_membrane_subtype || null,
+    barrier_membrane_subtype: Array.isArray(answers.barrier_membrane_subtype) ? (answers.barrier_membrane_subtype.join(', ') || null) : (answers.barrier_membrane_subtype || null),
     barrier_membrane_subtype_other: fieldVal('barrier_membrane_subtype_other'),
     barrier_membrane_morphology: answers.barrier_membrane_morphology || null,
     plastoglobuli: answers.plastoglobuli || null, plastoglobuli_location: fieldVal('plastoglobuli_location'),
